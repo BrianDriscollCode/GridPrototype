@@ -1,0 +1,223 @@
+using UnityEngine;
+
+[ExecuteAlways]
+public class GridManager : MonoBehaviour
+{
+    [Header("Level Data")]
+    public LevelScriptableObject levelData; // Reference to your scriptable object
+    public bool useLevelData = false; // Toggle to use SO data vs manual settings
+
+
+
+    [Header("Grid Settings")]
+    public bool generate = true;
+    public int gridWidth = 10;      // How many cells wide
+    public int gridHeight = 10;     // How many cells deep
+    public float cellSize = 4f;     // Each cell is 4x4 units
+
+    [Header("Tile Settings")]
+    public GameObject tilePrefab;   // Your tile prefab (4x1x4)
+
+    // Offset applied to each instantiated prefab (keeps grid point the same)
+    public Vector3 prefabOffset = new Vector3(2f, 0f, 2f);
+
+    // 2D array to store what's in each grid cell
+    public GameObject[,] gridTiles;
+
+
+    void Start()
+    {
+        
+        // Use level data dimensions if available
+        if (useLevelData && levelData != null)
+        {
+            gridWidth = levelData.columns;
+            gridHeight = levelData.rows;
+        }
+
+        // Initialize the grid array
+        gridTiles = new GameObject[gridWidth, gridHeight];
+
+        if (generate)
+        {
+            GenerateGrid();
+        }
+    }
+
+    public void GenerateGrid()
+    {
+        if (useLevelData && levelData != null)
+        {
+            // Generate based on scriptable object data
+            GenerateFromLevelData();
+        }
+        else
+        {
+            // Generate all tiles (original behavior)
+            for (int x = 0; x < gridWidth; x++)
+            {
+                for (int z = 0; z < gridHeight; z++)
+                {
+                    PlaceTile(x, z);
+                }
+            }
+        }
+    }
+
+    // Generate grid based on LevelScriptableObject data
+    void GenerateFromLevelData()
+    {
+        // Option 1: Use rowToCols list (row-column pairs)
+        if (levelData.rowToCols != null && levelData.rowToCols.Count > 0)
+        {
+            foreach (var rowCol in levelData.rowToCols)
+            {
+                foreach (int col in rowCol.cols)
+                {
+                    PlaceTile(col, rowCol.row);
+                }
+            }
+        }
+        // Option 2: Use gridPos array if rowToCols is empty
+        else if (levelData.gridPos != null && levelData.gridPos.Length > 0)
+        {
+            foreach (Vector2 pos in levelData.gridPos)
+            {
+                PlaceTile((int)pos.x, (int)pos.y);
+            }
+        }
+        // Fallback: Generate all tiles
+        else
+        {
+            Debug.LogWarning("No tile positions defined in LevelScriptableObject. Generating full grid.");
+            for (int x = 0; x < gridWidth; x++)
+            {
+                for (int z = 0; z < gridHeight; z++)
+                {
+                    PlaceTile(x, z);
+                }
+            }
+        }
+    }
+
+    // Place a tile at grid coordinates (x, z)
+    //public void PlaceTile(int gridX, int gridZ)
+    //{
+    //    // Check if coordinates are valid
+    //    if (!IsValidGridPosition(gridX, gridZ))
+    //    {
+    //        Debug.LogWarning($"Invalid grid position: ({gridX}, {gridZ})");
+    //        return;
+    //    }
+
+    //    // If there's already a tile here, don't place another
+    //    if (gridTiles[gridX, gridZ] != null)
+    //    {
+    //        Debug.Log($"Tile already exists at ({gridX}, {gridZ})");
+    //        return;
+    //    }
+
+    //    // Convert grid position to world position
+    //    Vector3 worldPos = GridToWorldPosition(gridX, gridZ);
+
+    //    // Create the tile at the world position plus the prefab offset
+    //    GameObject tile = Instantiate(tilePrefab, worldPos + prefabOffset, Quaternion.identity, transform);
+
+    //    // Store it in the grid
+    //    gridTiles[gridX, gridZ] = tile;
+
+    //}
+
+    public void PlaceTile(int gridX, int gridZ)
+    {
+        // Check if coordinates are valid
+        if (!IsValidGridPosition(gridX, gridZ))
+        {
+            Debug.LogWarning($"Invalid grid position: ({gridX}, {gridZ})");
+            return;
+        }
+
+        // If there's already a tile here, don't place another
+        if (gridTiles[gridX, gridZ] != null)
+        {
+            Debug.Log($"Tile already exists at ({gridX}, {gridZ})");
+            return;
+        }
+
+        // Get height from level data if available
+        int height = 0;
+        if (useLevelData && levelData != null)
+        {
+            height = levelData.GetHeight(gridX, gridZ);
+        }
+
+        // Convert grid position to world position
+        Vector3 worldPos = GridToWorldPosition(gridX, gridZ);
+        worldPos.y = height; // Apply height
+
+        // Create the tile at the world position plus the prefab offset
+        GameObject tile = Instantiate(tilePrefab, worldPos + prefabOffset, Quaternion.identity, transform);
+
+        // Store it in the grid
+        gridTiles[gridX, gridZ] = tile;
+    }
+
+    // Remove a tile from the grid
+    public void RemoveTile(int gridX, int gridZ)
+    {
+        if (IsValidGridPosition(gridX, gridZ) && gridTiles[gridX, gridZ] != null)
+        {
+            Destroy(gridTiles[gridX, gridZ]);
+            gridTiles[gridX, gridZ] = null;
+        }
+    }
+
+    // Convert grid coordinates to world position
+    public Vector3 GridToWorldPosition(int gridX, int gridZ)
+    {
+        float worldX = gridX * cellSize;
+        float worldZ = gridZ * cellSize;
+        return new Vector3(worldX, 0, worldZ);
+    }
+
+    // Convert world position to grid coordinates
+    public Vector2Int WorldToGridPosition(Vector3 worldPos)
+    {
+        int gridX = Mathf.FloorToInt(worldPos.x / cellSize);
+        int gridZ = Mathf.FloorToInt(worldPos.z / cellSize);
+        return new Vector2Int(gridX, gridZ);
+    }
+
+    // Check if a grid position is valid
+    public bool IsValidGridPosition(int gridX, int gridZ)
+    {
+        return gridX >= 0 && gridX < gridWidth && gridZ >= 0 && gridZ < gridHeight;
+    }
+
+    // Check if a tile exists at this grid position
+    public bool HasTileAt(int gridX, int gridZ)
+    {
+        if (!IsValidGridPosition(gridX, gridZ)) return false;
+        return gridTiles[gridX, gridZ] != null;
+    }
+
+    // Visualize the grid in the editor
+    void OnDrawGizmos()
+    {
+        int width = useLevelData && levelData != null ? levelData.columns : gridWidth;
+        int height = useLevelData && levelData != null ? levelData.rows : gridHeight;
+
+        Gizmos.color = Color.green;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int z = 0; z < height; z++)
+            {
+                Vector3 pos = GridToWorldPosition(x, z);
+                // Draw a small cube at each grid position
+                Gizmos.DrawWireCube(pos + new Vector3(cellSize / 2, 0, cellSize / 2),
+                                    new Vector3(cellSize, 0.1f, cellSize));
+            }
+        }
+    }
+}
