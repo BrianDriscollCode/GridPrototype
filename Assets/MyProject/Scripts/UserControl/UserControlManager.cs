@@ -6,6 +6,10 @@ using System.Collections.Generic;
 // Database script for all relevant control actions
 // This is for prototype, if for real game, should be seperate
 
+// ********
+// *** TODO - Add Scriptable Object for toggling/untoggling CA_Actions
+// ********
+
 public class UserControlManager : MonoBehaviour
 {
     public GameObject selectedCharacter;
@@ -19,6 +23,7 @@ public class UserControlManager : MonoBehaviour
     // Control Components for Toggle Enable Functionality
     public CA_HoverTileSelection CA_HoverTileSelection;
     public CA_MoveCharacter CA_MoveCharacter;
+    public CA_SelectTileWithClick CA_SelectTileWithClick;
 
 
     //*** Build this later
@@ -36,6 +41,9 @@ public class UserControlManager : MonoBehaviour
         CA_MoveCharacter = gameObject.AddComponent<CA_MoveCharacter>();
         CA_MoveCharacter.userControlManager = this;
         CA_MoveCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
+
+        CA_SelectTileWithClick = gameObject.AddComponent<CA_SelectTileWithClick>();
+        CA_SelectTileWithClick.userControlManager = this;
         
 
         if (camera == null)
@@ -114,7 +122,7 @@ public class UserControlManager : MonoBehaviour
     {
         if (input.Player.LeftClick.IsPressed())
         {
-            HandleClick();
+            CA_SelectTileWithClick.HandleClick();
         }
 
         // manage control action (CA) toggle here
@@ -132,40 +140,6 @@ public class UserControlManager : MonoBehaviour
         {
             CA_MoveCharacter.Move();
         }
-    }
-
-    void HandleClick()
-    {
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = camera.ScreenPointToRay(mousePos);
-
-        _lastRay = ray;
-        _hasRay = true;
-
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, tileLayer))
-        {
-            _lastRayHit = true;
-            _lastHitPoint = hit.point;
-            _lastRayLength = hit.distance;
-
-            // get game object hit
-            selectedTile = hit.collider.gameObject;
-
-            Vector2Int gridPos = gridSystem.WorldToGridPosition(hit.point);
-            Debug.Log($"UserControlInterface::Clicked grid position: ({gridPos.x}, {gridPos.y})");
-            Debug.Log("UserControlInterface::HasTileAt: " + gridSystem.HasTileAt(gridPos.x, gridPos.y));
-
-            EventManager.OnClickedTile(gridPos);
-        }
-        else
-        {
-            Debug.Log("No hit");
-            _lastRayHit = false;
-            _lastRayLength = 100f;
-        }
-
-        Debug.DrawRay(ray.origin, ray.direction * _lastRayLength,
-            _lastRayHit ? Color.green : Color.red, 0.2f);
     }
 
     private void OnDrawGizmos()
