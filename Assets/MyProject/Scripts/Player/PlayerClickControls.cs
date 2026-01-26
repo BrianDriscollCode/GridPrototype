@@ -11,7 +11,6 @@ public class PlayerClickControls : MonoBehaviour
 
     public PlayerState currentState;
 
-    // NOTE: per your request this will move toward fromPos (i.e. move "from toPos to fromPos")
     public Vector3 fromPos;
     public Vector3 toPos;
 
@@ -19,7 +18,7 @@ public class PlayerClickControls : MonoBehaviour
     public float moveSpeed = 5f;
     public float arriveThreshold = 0.01f;
 
-    private Rigidbody rb;
+    public Rigidbody rb;
 
     private void Start()
     {
@@ -50,34 +49,36 @@ public class PlayerClickControls : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (currentState == PlayerState.Moving)
-        {
-            // target = fromPos (moving from toPos -> fromPos as requested)
-            Vector3 target = toPos;
-            float step = moveSpeed * Time.fixedDeltaTime;
 
-            if (rb != null)
-            {
-                Vector3 next = Vector3.MoveTowards(rb.position, target, step);
-                rb.MovePosition(next);
 
-                if ((rb.position - target).sqrMagnitude <= arriveThreshold * arriveThreshold)
-                {
-                    rb.position = target;
-                    currentState = PlayerState.Nuetral;
-                }
-            }
-            else
-            {
-                Vector3 next = Vector3.MoveTowards(transform.position, target, step);
-                transform.position = next;
+        //if (currentState == PlayerState.Moving)
+        //{
+        //    // target = fromPos (moving from toPos -> fromPos as requested)
+        //    Vector3 target = toPos;
+        //    float step = moveSpeed * Time.fixedDeltaTime;
 
-                if ((transform.position - target).sqrMagnitude <= arriveThreshold * arriveThreshold)
-                {
-                    transform.position = target;
-                    currentState = PlayerState.Nuetral;
-                }
-            }
-        }
+        //    if (rb != null)
+        //    {
+        //        Vector3 next = Vector3.MoveTowards(rb.position, target, step);
+        //        rb.MovePosition(next);
+
+        //        if ((rb.position - target).sqrMagnitude <= arriveThreshold * arriveThreshold)
+        //        {
+        //            rb.position = target;
+        //            currentState = PlayerState.Nuetral;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        Vector3 next = Vector3.MoveTowards(transform.position, target, step);
+        //        transform.position = next;
+
+        //        if ((transform.position - target).sqrMagnitude <= arriveThreshold * arriveThreshold)
+        //        {
+        //            transform.position = target;
+        //            currentState = PlayerState.Nuetral;
+        //        }
+        //    }
+        //}
     }
 }

@@ -2,22 +2,22 @@ using UnityEngine;
 
 public class UserControlState_UnitSelected : UserControlState
 {
-    public override void Enter()
+    public override void Enter(UserControlManager manager)
     {
         
     }
 
-    public override void Update()
+    public override void Update(UserControlManager manager)
     {
         
     }
 
-    public override void FixedUpdate()
+    public override void FixedUpdate(UserControlManager manager)
     {
        
     }
 
-    public override void Exit()
+    public override void Exit(UserControlManager manager)
     {
     
     }

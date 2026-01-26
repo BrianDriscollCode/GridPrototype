@@ -100,34 +100,6 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    // Place a tile at grid coordinates (x, z)
-    //public void PlaceTile(int gridX, int gridZ)
-    //{
-    //    // Check if coordinates are valid
-    //    if (!IsValidGridPosition(gridX, gridZ))
-    //    {
-    //        Debug.LogWarning($"Invalid grid position: ({gridX}, {gridZ})");
-    //        return;
-    //    }
-
-    //    // If there's already a tile here, don't place another
-    //    if (gridTiles[gridX, gridZ] != null)
-    //    {
-    //        Debug.Log($"Tile already exists at ({gridX}, {gridZ})");
-    //        return;
-    //    }
-
-    //    // Convert grid position to world position
-    //    Vector3 worldPos = GridToWorldPosition(gridX, gridZ);
-
-    //    // Create the tile at the world position plus the prefab offset
-    //    GameObject tile = Instantiate(tilePrefab, worldPos + prefabOffset, Quaternion.identity, transform);
-
-    //    // Store it in the grid
-    //    gridTiles[gridX, gridZ] = tile;
-
-    //}
-
     public void PlaceTile(int gridX, int gridZ)
     {
         // Check if coordinates are valid
