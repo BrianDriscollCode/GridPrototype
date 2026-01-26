@@ -22,11 +22,23 @@ public class CA_SelectTileWithClick : MonoBehaviour
             // get game object hit
             userControlManager.selectedTile = hit.collider.gameObject;
 
-            Vector2Int gridPos = userControlManager.gridSystem.WorldToGridPosition(hit.point);
-            Debug.Log($"UserControlInterface::Clicked grid position: ({gridPos.x}, {gridPos.y})");
-            Debug.Log("UserControlInterface::HasTileAt: " + userControlManager.gridSystem.HasTileAt(gridPos.x, gridPos.y));
+            Vector2Int gridPos = userControlManager.gridManager.WorldToGridPosition(hit.point);
+            //Debug.Log($"UserControlInterface::Clicked grid position: ({gridPos.x}, {gridPos.y})");
+            //Debug.Log("UserControlInterface::HasTileAt: " + userControlManager.gridManager.HasTileAt(gridPos.x, gridPos.y));
 
-            EventManager.OnClickedTile(gridPos);
+            GridManager gridManager = userControlManager.gridManager;
+
+            if (gridManager.IsTileAccessible(gridPos.x, gridPos.y))
+            {
+                EventManager.OnClickedTile(gridPos);
+            }
+            else
+            {
+                //Debug.Log("Tile In accessible");
+            }
+
+
+            
         }
         else
         {

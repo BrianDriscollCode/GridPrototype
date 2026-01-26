@@ -81,7 +81,7 @@ public class UserControlManager : MonoBehaviour
     [Header("Systems")]
     public Camera camera;
     public InputSystem_Actions input;
-    public GridManager gridSystem;
+    public GridManager gridManager;
 
     [Header("Collisions")]
     public LayerMask tileLayer;
@@ -141,6 +141,8 @@ public class UserControlManager : MonoBehaviour
             CA_MoveCharacter.Move();
         }
     }
+
+
 
     private void OnDrawGizmos()
     {

@@ -56,14 +56,14 @@ public class DebugTemp : MonoBehaviour
             //                     Vector2Int data type
             //Debug.Log($"Hit Point: " + hit.point);
             Vector2Int gridPos = gridSystem.WorldToGridPosition(hit.point);
-            Debug.Log($"Clicked grid position: ({gridPos.x}, {gridPos.y})");
+            //Debug.Log($"Clicked grid position: ({gridPos.x}, {gridPos.y})");
 
-            Debug.Log("HasTileAt: " + gridSystem.HasTileAt(gridPos.x, gridPos.y));
+           // Debug.Log("HasTileAt: " + gridSystem.HasTileAt(gridPos.x, gridPos.y));
 
         }
         else
         {
-            Debug.Log("No hit");
+            //Debug.Log("No hit");
             _lastRayHit = false;
 
             // draw a long ray if no hit

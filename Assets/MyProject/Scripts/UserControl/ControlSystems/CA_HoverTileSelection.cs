@@ -8,6 +8,7 @@ public class CA_HoverTileSelection : MonoBehaviour
 
     // Managing material and color swaps
     public Material _hoveredMaterialInstance;
+    public Material _hoveredNoAccessMaterialInstance;
     private Color _originalColor;
     private Dictionary<GameObject, Material> _originalMaterials = new Dictionary<GameObject, Material>();
 
@@ -16,6 +17,7 @@ public class CA_HoverTileSelection : MonoBehaviour
     {
         // access materials from files
         _hoveredMaterialInstance = Resources.Load<Material>("Materials/grid_tile_top_512_thicklines_lightouterPurp");
+        _hoveredNoAccessMaterialInstance = Resources.Load<Material>("Materials/grid_tile_top_512_thicklines_Red");
 
         if (_hoveredMaterialInstance == null)
         {
@@ -41,7 +43,7 @@ public class CA_HoverTileSelection : MonoBehaviour
             userControlManager._hoverRayLength = hit.distance;
 
             GameObject hitObject = hit.collider.gameObject;
-            Vector2Int gridPos = userControlManager.gridSystem.WorldToGridPosition(hit.point);
+            Vector2Int gridPos = userControlManager.gridManager.WorldToGridPosition(hit.point);
 
             // Check if we started hovering a new object
             if (userControlManager._currentHoveredObject != hitObject)
@@ -77,7 +79,7 @@ public class CA_HoverTileSelection : MonoBehaviour
 
     protected virtual void OnHoverEnter(GameObject obj, Vector2Int gridPos)
     {
-        Debug.Log($"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
+        //Debug.Log($"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 
 
         var renderer = obj.GetComponent<Renderer>();
@@ -87,14 +89,23 @@ public class CA_HoverTileSelection : MonoBehaviour
             if (!_originalMaterials.ContainsKey(obj))
                 _originalMaterials[obj] = renderer.material;
 
-            renderer.material = _hoveredMaterialInstance;
+            if(userControlManager.gridManager.levelData.IsAccessible(gridPos.x, gridPos.y))
+            {
+                // Switch to correct material based on tile accessibility
+                renderer.material = _hoveredMaterialInstance;
+            }
+            else
+            {
+                // Switch to correct material based on tile accessibility
+                renderer.material = _hoveredNoAccessMaterialInstance;
+            }
         }
     }
 
 
     protected virtual void OnHoverExit(GameObject obj, Vector2Int gridPos)
     {
-        Debug.Log($"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
+        //Debug.Log($"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 
         var renderer = obj.GetComponent<Renderer>();
         if (renderer != null && _originalMaterials.ContainsKey(obj))

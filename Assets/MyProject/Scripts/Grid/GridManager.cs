@@ -44,6 +44,12 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    public bool IsTileAccessible(int col, int row)
+    {
+        if (levelData == null) return false;
+        return levelData.IsAccessible(col, row);
+    }
+
     public void GenerateGrid()
     {
         if (useLevelData && levelData != null)
@@ -171,6 +177,13 @@ public class GridManager : MonoBehaviour
     {
         if (!IsValidGridPosition(gridX, gridZ)) return false;
         return gridTiles[gridX, gridZ] != null;
+    }
+
+    public GameObject GetTile(int gridX, int gridZ)
+    {
+        if (!IsValidGridPosition(gridX, gridZ)) return null;
+        return gridTiles[gridX, gridZ];
+
     }
 
     // Visualize the grid in the editor
