@@ -28,6 +28,11 @@ public class CA_HoverTileSelection : MonoBehaviour
             Debug.LogError("Succes to load hover material! Not error!");
         }
     }
+
+    public void Action()
+    {
+        HandleHover();
+    }
     public void HandleHover()
     {
         // Raycast from camera center (like a crosshair)

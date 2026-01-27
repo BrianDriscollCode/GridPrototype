@@ -5,6 +5,11 @@ public class CA_SelectTileWithClick : MonoBehaviour
 {
     public UserControlManager userControlManager;
 
+    public void Action()
+    {
+        HandleClick();
+    }
+
     public void HandleClick()
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();

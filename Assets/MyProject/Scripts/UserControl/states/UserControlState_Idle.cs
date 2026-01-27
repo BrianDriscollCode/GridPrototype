@@ -4,7 +4,7 @@ public class UserControlState_Idle : UserControlState
 {
     public override void Enter(UserControlManager manager)
     {
-        
+        manager.currentControlMode = manager.SelectionCA;
     }
 
     public override void Update(UserControlManager manager)

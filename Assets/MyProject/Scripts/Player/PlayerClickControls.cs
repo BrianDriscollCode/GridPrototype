@@ -2,14 +2,6 @@ using UnityEngine;
 
 public class PlayerClickControls : MonoBehaviour
 {
-    public enum PlayerState
-    {
-        Nuetral,
-        Moving,
-        Attacking
-    }
-
-    public PlayerState currentState;
 
     public Vector3 fromPos;
     public Vector3 toPos;
@@ -22,7 +14,6 @@ public class PlayerClickControls : MonoBehaviour
 
     private void Start()
     {
-        currentState = PlayerState.Nuetral;
         rb = GetComponent<Rigidbody>();
     }
 
@@ -43,42 +34,11 @@ public class PlayerClickControls : MonoBehaviour
         //Debug.Log("Listener: I heard the tile click event!");
         //Debug.Log($"Listener: Tile clicked at: {gridPos}");
         // do something useful here
-        toPos = new Vector3((gridPos.x * 4) + 2f, 0, (gridPos.y * 4) + 2f);
-        currentState = PlayerState.Moving;
+        toPos = new Vector3((gridPos.x * 4) + 2f, transform.position.y, (gridPos.y * 4) + 2f);
     }
 
     private void FixedUpdate()
     {
 
-
-        //if (currentState == PlayerState.Moving)
-        //{
-        //    // target = fromPos (moving from toPos -> fromPos as requested)
-        //    Vector3 target = toPos;
-        //    float step = moveSpeed * Time.fixedDeltaTime;
-
-        //    if (rb != null)
-        //    {
-        //        Vector3 next = Vector3.MoveTowards(rb.position, target, step);
-        //        rb.MovePosition(next);
-
-        //        if ((rb.position - target).sqrMagnitude <= arriveThreshold * arriveThreshold)
-        //        {
-        //            rb.position = target;
-        //            currentState = PlayerState.Nuetral;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        Vector3 next = Vector3.MoveTowards(transform.position, target, step);
-        //        transform.position = next;
-
-        //        if ((transform.position - target).sqrMagnitude <= arriveThreshold * arriveThreshold)
-        //        {
-        //            transform.position = target;
-        //            currentState = PlayerState.Nuetral;
-        //        }
-        //    }
-        //}
     }
 }

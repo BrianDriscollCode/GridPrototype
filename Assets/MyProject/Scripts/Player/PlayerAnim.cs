@@ -12,10 +12,22 @@ public class PlayerAnim : MonoBehaviour
         if (playerAnimator == null)
             playerAnimator = GetComponentInChildren<Animator>();
 
-        isRunningHash = Animator.StringToHash("isRunning");
-        isIdleHash = Animator.StringToHash("isIdle");
+        isRunningHash = Animator.StringToHash("IsRunning");
+        isIdleHash = Animator.StringToHash("IsIdle");
+    }
+    
+    public void RunAnimation()
+    {
+        Debug.Log("Run Animation");
+        playerAnimator.SetBool(isRunningHash, true);
+        playerAnimator.SetBool(isIdleHash, false);
     }
 
-    // This script doesn't need Update.
-    // Player.cs will set the animator bools every FixedUpdate.
+    public void IdleAnimation()
+    {
+        Debug.Log("Idle Animation");
+        playerAnimator.SetBool(isRunningHash, false);
+        playerAnimator.SetBool(isIdleHash, true);
+    }
+
 }

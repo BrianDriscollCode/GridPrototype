@@ -17,21 +17,50 @@ public class UserControlManager : MonoBehaviour
     public GameObject hoveredEntity;
 
     public UserControlState currentState;
+    [SerializeField] private string currentStateString;
+    // rename to SELECTION
     public UserControlState IDLE = new UserControlState_Idle();
+    // rename to MOVE
     public UserControlState UNITSELECTED = new UserControlState_UnitSelected();
 
     // Control Components for Toggle Enable Functionality
     public CA_HoverTileSelection CA_HoverTileSelection;
     public CA_MoveCharacter CA_MoveCharacter;
     public CA_SelectTileWithClick CA_SelectTileWithClick;
+    public CA_IdleCharacter CA_IdleCharacter;
 
+    public ControlActionsTogglerScriptableObject SelectionCA;
+    public ControlActionsTogglerScriptableObject MoveCA;
+
+    public ControlActionsTogglerScriptableObject currentControlMode;
+
+    private void OnEnable()
+    {
+        EventManager.ClickedTile += HandleTileClicked;
+        //Debug.Log("Listener: subscribed to ClickedTile");
+    }
+
+    private void OnDisable()
+    {
+        EventManager.ClickedTile -= HandleTileClicked;
+        //Debug.Log("Listener: unsubscribed from ClickedTile");
+    }
+
+    private void HandleTileClicked(Vector2Int gridPos)
+    {
+        ExitState(currentState);
+        EnterState(UNITSELECTED);
+
+    }
 
     //*** Build this later
     //public CommandQueue commandQueue;
 
     private void Start()
     {
+        currentControlMode = SelectionCA;
         currentState = IDLE;
+        UpdateStateString();
 
         input = GameObject.Find("InputSystem").GetComponent<InputSystem>().input;
 
@@ -41,9 +70,16 @@ public class UserControlManager : MonoBehaviour
         CA_MoveCharacter = gameObject.AddComponent<CA_MoveCharacter>();
         CA_MoveCharacter.userControlManager = this;
         CA_MoveCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
+        CA_MoveCharacter.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
+        selectedCharacter.GetComponent<PlayerAnim>().IdleAnimation();
 
         CA_SelectTileWithClick = gameObject.AddComponent<CA_SelectTileWithClick>();
         CA_SelectTileWithClick.userControlManager = this;
+
+        CA_IdleCharacter = gameObject.AddComponent<CA_IdleCharacter>();
+        CA_IdleCharacter.userControlManager = this;
+        CA_IdleCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
+        CA_IdleCharacter.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
         
 
         if (camera == null)
@@ -68,12 +104,19 @@ public class UserControlManager : MonoBehaviour
 
     public void EnterState(UserControlState state)
     {
+        currentState = state;
         currentState.Enter(this);
+        UpdateStateString();
     }
 
     public void ExitState(UserControlState state)
     {
         currentState.Exit(this);
+    }
+
+    private void UpdateStateString()
+    {
+        currentStateString = currentState?.GetType().Name ?? "None";
     }
 
     // UserControlState Parent Functionality
@@ -120,29 +163,32 @@ public class UserControlManager : MonoBehaviour
 
     public void ScriptUpdate()
     {
-        if (input.Player.LeftClick.IsPressed())
+        if (input.Player.LeftClick.IsPressed() && currentControlMode.enableSelectTileWithClick)
         {
-            CA_SelectTileWithClick.HandleClick();
+            CA_SelectTileWithClick.Action();
         }
 
         // manage control action (CA) toggle here
 
-        if (enableHover)
+        if (enableHover && currentControlMode.enableHoverTileSelection)
         {
-            CA_HoverTileSelection.HandleHover();
+            CA_HoverTileSelection.Action();
         }
         
     }
 
     public void ScriptFixedUpdate()
     {
-        if (enableCharacterMovement)
+        if (enableCharacterMovement && currentControlMode.enableMoveCharacter)
         {
-            CA_MoveCharacter.Move();
+            CA_MoveCharacter.Action();
+        }
+        
+        if (currentControlMode.enableIdleCharacter)
+        {
+            CA_IdleCharacter.Action();
         }
     }
-
-
 
     private void OnDrawGizmos()
     {
