@@ -48,7 +48,7 @@ public class CM_Move
                 playerControls.rb.position = target;
                 //playerControls.currentState = PlayerState.Neutral;
                 userControlManager.ExitState(userControlManager.currentState);
-                userControlManager.EnterState(userControlManager.IDLE);
+                userControlManager.EnterState(userControlManager.SELECT);
             }
         }
         //if (playerControls.currentState == PlayerClickControls.PlayerState.Moving)

@@ -1,10 +1,10 @@
 using UnityEngine;
 
-public class UserControlState_UnitSelected : UserControlState
+public class UserControlState_Select : UserControlState
 {
     public override void Enter(UserControlManager manager)
     {
-        manager.currentControlMode = manager.MoveCA;
+        manager.currentControlMode = manager.SelectionCA;
     }
 
     public override void Update(UserControlManager manager)

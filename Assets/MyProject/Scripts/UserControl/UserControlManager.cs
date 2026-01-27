@@ -19,9 +19,9 @@ public class UserControlManager : MonoBehaviour
     public UserControlState currentState;
     [SerializeField] private string currentStateString;
     // rename to SELECTION
-    public UserControlState IDLE = new UserControlState_Idle();
+    public UserControlState SELECT = new UserControlState_Select();
     // rename to MOVE
-    public UserControlState UNITSELECTED = new UserControlState_UnitSelected();
+    public UserControlState CHARACTERACTION = new UserControlState_CharacterMove();
 
     // Control Components for Toggle Enable Functionality
     public CA_HoverTileSelection CA_HoverTileSelection;
@@ -49,7 +49,7 @@ public class UserControlManager : MonoBehaviour
     private void HandleTileClicked(Vector2Int gridPos)
     {
         ExitState(currentState);
-        EnterState(UNITSELECTED);
+        EnterState(CHARACTERACTION);
 
     }
 
@@ -59,7 +59,7 @@ public class UserControlManager : MonoBehaviour
     private void Start()
     {
         currentControlMode = SelectionCA;
-        currentState = IDLE;
+        currentState = SELECT;
         UpdateStateString();
 
         input = GameObject.Find("InputSystem").GetComponent<InputSystem>().input;
