@@ -14,7 +14,7 @@ public class UserControlManager : MonoBehaviour
 {
     public GameObject selectedCharacter;
     public GameObject targetedTile;
-    public GameObject hoveredEntity;
+    public GameObject hoveredCharacter;
 
     public UserControlState currentState;
     [SerializeField] public string currentStateString;
@@ -28,6 +28,8 @@ public class UserControlManager : MonoBehaviour
     public CA_MoveCharacter CA_MoveCharacter;
     public CA_SelectTileWithClick CA_SelectTileWithClick;
     public CA_IdleCharacter CA_IdleCharacter;
+    public CA_HoverCharacter CA_HoverCharacter;
+    public CA_SelectCharacterWithClick CA_SelectCharacterWithClick;
 
     public ControlActionsTogglerScriptableObject SelectionCA;
     public ControlActionsTogglerScriptableObject MoveCA;
@@ -67,6 +69,9 @@ public class UserControlManager : MonoBehaviour
         CA_HoverTileSelection = gameObject.AddComponent<CA_HoverTileSelection>();
         CA_HoverTileSelection.userControlManager = this;
 
+        CA_HoverCharacter = gameObject.AddComponent<CA_HoverCharacter>();
+        CA_HoverCharacter.userControlManager = this;
+
         CA_MoveCharacter = gameObject.AddComponent<CA_MoveCharacter>();
         CA_MoveCharacter.userControlManager = this;
         CA_MoveCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
@@ -80,7 +85,9 @@ public class UserControlManager : MonoBehaviour
         CA_IdleCharacter.userControlManager = this;
         CA_IdleCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
         CA_IdleCharacter.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
-        
+
+        CA_SelectCharacterWithClick = gameObject.AddComponent<CA_SelectCharacterWithClick>();
+        CA_SelectCharacterWithClick.userControlManager = this;
 
         if (camera == null)
             camera = Camera.main;
@@ -139,6 +146,13 @@ public class UserControlManager : MonoBehaviour
     public Material _originalMaterial;
     public Renderer _hoveredRenderer;
 
+    [Header("Hover Character Detection")]
+    public bool enableCharacterHover;
+    public LayerMask characterHoverLayer;
+
+    public GameObject _currentCharacterSelected;
+    public Vector2Int _currentCharacterGridPos;
+
     // --- Gizmo Debug Data ---
     public Ray _lastRay;
     public bool _hasRay;
@@ -163,18 +177,30 @@ public class UserControlManager : MonoBehaviour
 
     public void ScriptUpdate()
     {
-        if (input.Player.LeftClick.IsPressed() && currentControlMode.enableSelectTileWithClick)
+        bool isRaycastHittingPlayer = CA_HoverCharacter.isHittingCharacter;
+
+        if (input.Player.LeftClick.IsPressed() && currentControlMode.enableSelectTileWithClick
+            && !isRaycastHittingPlayer)
         {
             CA_SelectTileWithClick.Action();
         }
 
+        if (input.Player.LeftClick.IsPressed() && currentControlMode.enableCharacterClick)
+        {
+            CA_SelectCharacterWithClick.Action();
+        }
+
         // manage control action (CA) toggle here
 
-        if (enableHover && currentControlMode.enableHoverTileSelection)
+        if (enableHover && currentControlMode.enableHoverTileSelection && !isRaycastHittingPlayer)
         {
             CA_HoverTileSelection.Action();
         }
-        
+
+        if (enableCharacterHover && currentControlMode.enableCharacterHover)
+        {
+            CA_HoverCharacter.Action();
+        }
     }
 
     public void ScriptFixedUpdate()

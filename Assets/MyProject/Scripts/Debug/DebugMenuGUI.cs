@@ -43,6 +43,12 @@ public class DebugMenuGUI : MonoBehaviour
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight), 
             userControlManager.selectedCharacter != null ? userControlManager.selectedCharacter.name : "None"))
             Debug.Log("Selected Character clicked");
+
+        // Row 4: Current Hovered Character
+        GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Hovered Character:");
+        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight),
+            userControlManager.hoveredCharacter != null ? userControlManager.hoveredCharacter.ToString() : "None"))
+            Debug.Log("Hovered Character clicked");
     }
 }
 
