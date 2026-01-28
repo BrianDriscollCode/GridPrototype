@@ -17,7 +17,7 @@ public class UserControlManager : MonoBehaviour
     public GameObject hoveredEntity;
 
     public UserControlState currentState;
-    [SerializeField] private string currentStateString;
+    [SerializeField] public string currentStateString;
     // rename to SELECTION
     public UserControlState SELECT = new UserControlState_Select();
     // rename to MOVE

@@ -18,10 +18,13 @@ public class CA_IdleCharacter : MonoBehaviour
     public void Action()
 	{
 
-		//if (playerControls.currentState == PlayerClickControls.PlayerState.Neutral)
-		//{
-		//	playerAnim.IdleAnimation();
-		//}
-		CM_Idle.Idle();
+        // Add null check to prevent NullReferenceException
+        if (CM_Idle == null)
+        {
+            // Initialize immediately if not ready
+            CM_Idle = new CM_Idle(userControlManager, playerControls, playerAnim);
+        }
+
+        CM_Idle.Idle();
 	}
 }
