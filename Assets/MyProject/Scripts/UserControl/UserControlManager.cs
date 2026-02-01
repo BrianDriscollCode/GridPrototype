@@ -12,15 +12,18 @@ using System.Collections.Generic;
 
 public class UserControlManager : MonoBehaviour
 {
+    public GameStateManager gameStateManager;
+    public IGameState currentGameState;
+
     public GameObject selectedCharacter;
     public GameObject targetedTile;
     public GameObject hoveredCharacter;
 
     public UserControlState currentState;
     [SerializeField] public string currentStateString;
-    // rename to SELECTION
+
+    // Gates actions for user control
     public UserControlState SELECT = new UserControlState_Select();
-    // rename to MOVE
     public UserControlState CHARACTERACTION = new UserControlState_CharacterMove();
 
     // Control Components for Toggle Enable Functionality
@@ -31,6 +34,7 @@ public class UserControlManager : MonoBehaviour
     public CA_HoverCharacter CA_HoverCharacter;
     public CA_SelectCharacterWithClick CA_SelectCharacterWithClick;
 
+    // Config for enabling/disabling Control Actions (CA)
     public ControlActionsTogglerScriptableObject SelectionCA;
     public ControlActionsTogglerScriptableObject MoveCA;
 
@@ -55,11 +59,14 @@ public class UserControlManager : MonoBehaviour
 
     }
 
+
+
     //*** Build this later
     //public CommandQueue commandQueue;
 
     private void Start()
     {
+        currentGameState = gameStateManager.currentState;
         currentControlMode = SelectionCA;
         currentState = SELECT;
         UpdateStateString();
@@ -96,17 +103,29 @@ public class UserControlManager : MonoBehaviour
             hoverLayer = tileLayer;
     }
 
+    // Trying to figure out how to state machine this a bit better
+    // Need to start getting the logic a little diff based on the config
+    // Or at the very least, have decided on a path and follow it.
+
     public void Update()
     {
         currentState.Update(this);
-        ScriptUpdate();
+
+        if (currentGameState == gameStateManager.Battle)
+        {
+            BattleControlsUpdate();
+        }
 
     }
 
     public void FixedUpdate()
     {
         currentState.FixedUpdate(this);
-        ScriptFixedUpdate();
+
+        if (currentGameState == gameStateManager.Battle)
+        {
+            BattleControlsFixedUpdate();
+        }
     }
 
     public void EnterState(UserControlState state)
@@ -175,7 +194,7 @@ public class UserControlManager : MonoBehaviour
     public bool enableCharacterMovement = true;
 
 
-    public void ScriptUpdate()
+    public void BattleControlsUpdate()
     {
         bool isRaycastHittingPlayer = CA_HoverCharacter.isHittingCharacter;
 
@@ -203,7 +222,7 @@ public class UserControlManager : MonoBehaviour
         }
     }
 
-    public void ScriptFixedUpdate()
+    public void BattleControlsFixedUpdate()
     {
         if (enableCharacterMovement && currentControlMode.enableMoveCharacter)
         {

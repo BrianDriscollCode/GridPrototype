@@ -11,4 +11,11 @@ public static class EventManager
     {
         ClickedTile?.Invoke(gridPos);
     }
+
+    //public static event UnityAction<IGameState> ChangeGameState;
+
+    //public static void OnGameStateChange(IGameState state)
+    //{
+    //    ChangeGameState?.Invoke(state);
+    //}
 }

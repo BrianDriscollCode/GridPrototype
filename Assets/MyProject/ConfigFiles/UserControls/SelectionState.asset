@@ -17,3 +17,4 @@ MonoBehaviour:
   enableSelectTileWithClick: 1
   enableIdleCharacter: 1
   enableCharacterHover: 1
+  enableCharacterClick: 1
