@@ -3,6 +3,10 @@ using UnityEngine.InputSystem;
 
 public class CA_SelectCharacterWithClick : MonoBehaviour
 {
+    // new User Control Manager
+    public UserControlOrchestrator userControlOrchestrator;
+
+    // will be deprecated
     public UserControlManager userControlManager;
 
     public void Action()

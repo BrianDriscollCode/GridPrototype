@@ -5,7 +5,12 @@ public class CA_MoveCharacter : MonoBehaviour
 {
     public CM_Move cm_move;
 
+    // new User Control Manager
+    public UserControlOrchestrator userControlOrchestrator;
+
+    // will be deprecated
     public UserControlManager userControlManager;
+
     public PlayerClickControls playerControls;
     public PlayerAnim playerAnim;
 
@@ -18,7 +23,7 @@ public class CA_MoveCharacter : MonoBehaviour
         //cm_move.userControlManager = userControlManager;
         //cm_move.playerControls = playerControls;
         //cm_move.playerAnim = playerAnim;
-        cm_move = new CM_Move(userControlManager, playerControls, playerAnim);
+        cm_move = new CM_Move(userControlOrchestrator, userControlManager, playerControls, playerAnim);
         cm_move.rotationSpeed = rotationSpeed;
     }
 

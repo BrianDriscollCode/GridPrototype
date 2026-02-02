@@ -4,6 +4,10 @@ using UnityEngine.InputSystem;
 
 public class CA_HoverCharacter : MonoBehaviour
 {
+    // new User Control Manager
+    public UserControlOrchestrator userControlOrchestrator;
+
+    // will be deprecated
     public UserControlManager userControlManager;
 
     // Managing material and color swaps

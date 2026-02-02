@@ -2,9 +2,13 @@ using UnityEngine;
 
 public class CA_IdleCharacter : MonoBehaviour
 {
-	public UserControlManager userControlManager;
+    // new User Control Manager
+    public UserControlOrchestrator userControlOrchestrator;
 
-	public PlayerClickControls playerControls;
+    // will be deprecated
+    public UserControlManager userControlManager;
+
+    public PlayerClickControls playerControls;
 
 	public PlayerAnim playerAnim;
 
@@ -12,7 +16,7 @@ public class CA_IdleCharacter : MonoBehaviour
 
     public void Start()
     {
-		CM_Idle = new CM_Idle(userControlManager, playerControls, playerAnim); 
+		CM_Idle = new CM_Idle(playerControls, playerAnim); 
     }
 
     public void Action()
@@ -22,7 +26,7 @@ public class CA_IdleCharacter : MonoBehaviour
         if (CM_Idle == null)
         {
             // Initialize immediately if not ready
-            CM_Idle = new CM_Idle(userControlManager, playerControls, playerAnim);
+            CM_Idle = new CM_Idle(playerControls, playerAnim);
         }
 
         CM_Idle.Idle();

@@ -12,6 +12,9 @@ using System.Collections.Generic;
 
 public class UserControlManager : MonoBehaviour
 {
+    //New ControlManager
+    public UserControlOrchestrator userControlOrchestrator;
+
     public GameStateManager gameStateManager;
     public IGameState currentGameState;
 
@@ -86,7 +89,8 @@ public class UserControlManager : MonoBehaviour
         selectedCharacter.GetComponent<PlayerAnim>().IdleAnimation();
 
         CA_SelectTileWithClick = gameObject.AddComponent<CA_SelectTileWithClick>();
-        CA_SelectTileWithClick.userControlManager = this;
+        // No Longer functional as part of deprecation process
+        //CA_SelectTileWithClick.userControlManager = this;
 
         CA_IdleCharacter = gameObject.AddComponent<CA_IdleCharacter>();
         CA_IdleCharacter.userControlManager = this;

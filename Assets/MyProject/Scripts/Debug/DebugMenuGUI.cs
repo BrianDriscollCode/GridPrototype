@@ -4,14 +4,20 @@ public class DebugMenuGUI : MonoBehaviour
 {
     public bool show = true;
 
-    public UserControlManager userControlManager;
+    //public UserControlManager userControlManager;
+    public UserControlOrchestrator userControlOrchestrator;
     public GridManager gridManager;
+
+    public string characterPhaseString;
+    public string stateString;
 
     void Update()
     {
         // Toggle with backquote `
         //if (Input.GetKeyDown(KeyCode.BackQuote))
         //    show = !show;
+        characterPhaseString = userControlOrchestrator.userControlState.GetStateInfo().characterPhase.ToString();
+        stateString = userControlOrchestrator.stateString;
     }
 
     void OnGUI()
@@ -26,29 +32,45 @@ public class DebugMenuGUI : MonoBehaviour
         float valueWidth = 230;
         float leftMargin = 20;
 
-        // Row 1: Current Control Mode
+        //// Row 1: Current Control Mode
+        //GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
+        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight), 
+        //    userControlManager.currentControlMode != null ? userControlManager.currentControlMode.name : "None"))
+        //    Debug.Log("Control Mode clicked");
+
+        //// Row 2: Current State
+        //GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "Current State:");
+        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight), 
+        //    userControlManager.currentStateString))
+        //    Debug.Log("Current State clicked");
+
+        //// Row 3: Selected Character
+        //GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "Selected Character:");
+        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight), 
+        //    userControlManager.selectedCharacter != null ? userControlManager.selectedCharacter.name : "None"))
+        //    Debug.Log("Selected Character clicked");
+
+        //// Row 4: Current Hovered Character
+        //GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Hovered Character:");
+        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight),
+        //    userControlManager.hoveredCharacter != null ? userControlManager.hoveredCharacter.ToString() : "None"))
+        //    Debug.Log("Hovered Character clicked");
+
         GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
-        if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight), 
-            userControlManager.currentControlMode != null ? userControlManager.currentControlMode.name : "None"))
-            Debug.Log("Control Mode clicked");
+        if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight),
+            userControlOrchestrator.stateString != null ? stateString : "None"))
+            Debug.Log("State String");
 
-        // Row 2: Current State
-        GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "Current State:");
-        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight), 
-            userControlManager.currentStateString))
+        //GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
+        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight),
+        //    userControlOrchestrator.userControlState.GetStateInfo() != null ? userControlOrchestrator.userControlState.GetStateInfo().ToString() : "None"))
+        //    Debug.Log("State String");
+
+        //// Row 2: Current State
+        GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "CharacterPhase:");
+        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight),
+            userControlOrchestrator.userControlState.GetStateInfo() != null ? characterPhaseString : "None"))
             Debug.Log("Current State clicked");
-
-        // Row 3: Selected Character
-        GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "Selected Character:");
-        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight), 
-            userControlManager.selectedCharacter != null ? userControlManager.selectedCharacter.name : "None"))
-            Debug.Log("Selected Character clicked");
-
-        // Row 4: Current Hovered Character
-        GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Hovered Character:");
-        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight),
-            userControlManager.hoveredCharacter != null ? userControlManager.hoveredCharacter.ToString() : "None"))
-            Debug.Log("Hovered Character clicked");
     }
 }
 

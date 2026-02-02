@@ -4,7 +4,14 @@ using UnityEngine.InputSystem;
 
 public class CA_HoverTileSelection : MonoBehaviour
 {
+    // new User Control Manager
+    public UserControlOrchestrator userControlOrchestrator;
+
+    // will be deprecated
     public UserControlManager userControlManager;
+
+    // Access Raycast Functionality
+    public InterfaceRaycastSelection interfaceRaycastSelection;
 
     // Managing material and color swaps
     public Material _hoveredMaterialInstance;
@@ -37,45 +44,48 @@ public class CA_HoverTileSelection : MonoBehaviour
     {
         // Raycast from camera center (like a crosshair)
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = userControlManager.camera.ScreenPointToRay(mousePos);
-        userControlManager._hoverRay = ray;
-        userControlManager._hasHoverRay = true;
+        Ray ray = userControlOrchestrator.camera.ScreenPointToRay(mousePos);
+        interfaceRaycastSelection._hoverRay = ray;
+        interfaceRaycastSelection._hasHoverRay = true;
 
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, userControlManager.hoverLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, interfaceRaycastSelection.hoverLayer))
         {
-            userControlManager._hoverHit = true;
-            userControlManager._hoverHitPoint = hit.point;
-            userControlManager._hoverRayLength = hit.distance;
+            Debug.Log("entered");
+            interfaceRaycastSelection._hoverHit = true;
+            interfaceRaycastSelection._hoverHitPoint = hit.point;
+            interfaceRaycastSelection._hoverRayLength = hit.distance;
 
             GameObject hitObject = hit.collider.gameObject;
-            Vector2Int gridPos = userControlManager.gridManager.WorldToGridPosition(hit.point);
+            Vector2Int gridPos = interfaceRaycastSelection.gridManager.WorldToGridPosition(hit.point);
 
             // Check if we started hovering a new object
-            if (userControlManager._currentHoveredObject != hitObject)
+            if (interfaceRaycastSelection._currentHoveredObject != hitObject)
             {
+                Debug.Log("entered more");
                 // Exit previous hover
-                if (userControlManager._currentHoveredObject != null)
+                if (interfaceRaycastSelection._currentHoveredObject != null)
                 {
-                    OnHoverExit(userControlManager._currentHoveredObject, userControlManager._currentHoveredGridPos);
+                    OnHoverExit(interfaceRaycastSelection._currentHoveredObject, interfaceRaycastSelection._currentHoveredGridPos);
                 }
 
                 // Enter new hover
-                userControlManager._currentHoveredObject = hitObject;
-                userControlManager._currentHoveredGridPos = gridPos;
+                interfaceRaycastSelection._currentHoveredObject = hitObject;
+                interfaceRaycastSelection._currentHoveredGridPos = gridPos;
                 OnHoverEnter(hitObject, gridPos);
             }
         }
         else
         {
-            userControlManager._hoverHit = false;
-            userControlManager._hoverRayLength = 100f;
+            Debug.Log("elsed");
+            interfaceRaycastSelection._hoverHit = false;
+            interfaceRaycastSelection._hoverRayLength = 100f;
 
             // Clear hover if we had one
-            if (userControlManager._currentHoveredObject != null)
+            if (interfaceRaycastSelection._currentHoveredObject != null)
             {
-                OnHoverExit(userControlManager._currentHoveredObject, userControlManager._currentHoveredGridPos);
-                userControlManager._currentHoveredObject = null;
-                userControlManager._currentHoveredGridPos = new Vector2Int(-1, -1);
+                OnHoverExit(interfaceRaycastSelection._currentHoveredObject, interfaceRaycastSelection._currentHoveredGridPos);
+                interfaceRaycastSelection._currentHoveredObject = null;
+                interfaceRaycastSelection._currentHoveredGridPos = new Vector2Int(-1, -1);
             }
         }
 
@@ -94,7 +104,7 @@ public class CA_HoverTileSelection : MonoBehaviour
             if (!_originalMaterials.ContainsKey(obj))
                 _originalMaterials[obj] = renderer.material;
 
-            if(userControlManager.gridManager.levelData.IsAccessible(gridPos.x, gridPos.y))
+            if(userControlOrchestrator.gridManager.levelData.IsAccessible(gridPos.x, gridPos.y))
             {
                 // Switch to correct material based on tile accessibility
                 renderer.material = _hoveredMaterialInstance;
