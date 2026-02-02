@@ -7,4 +7,6 @@ public class ControlActionsTogglerScriptableObject : ScriptableObject
     public bool enableMoveCharacter;
     public bool enableSelectTileWithClick;
     public bool enableIdleCharacter;
+    public bool enableCharacterHover;
+    public bool enableCharacterClick;
 }

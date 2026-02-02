@@ -3,7 +3,12 @@ using static PlayerClickControls;
 
 public class CM_Move
 {
+    // New Control Manager
+    public UserControlOrchestrator userControlOrchestrator;
+
+    // Will be deprecated
     public UserControlManager userControlManager;
+    
     public PlayerClickControls playerControls;
     public PlayerAnim playerAnim;
 
@@ -11,8 +16,9 @@ public class CM_Move
     public float rotationSpeed = 10f; // How fast the character rotates toward target
 
     // Constructor to initialize dependencies
-    public CM_Move(UserControlManager manager, PlayerClickControls controls, PlayerAnim anim)
+    public CM_Move(UserControlOrchestrator orchestrator, UserControlManager manager, PlayerClickControls controls, PlayerAnim anim)
     {
+        userControlOrchestrator = orchestrator;
         userControlManager = manager;
         playerControls = controls;
         playerAnim = anim;
@@ -45,10 +51,14 @@ public class CM_Move
 
             if ((playerControls.rb.position - target).sqrMagnitude <= playerControls.arriveThreshold * playerControls.arriveThreshold)
             {
+                Debug.Log("TEST");
                 playerControls.rb.position = target;
                 //playerControls.currentState = PlayerState.Neutral;
-                userControlManager.ExitState(userControlManager.currentState);
-                userControlManager.EnterState(userControlManager.SELECT);
+                //userControlOrchestrator.ExitState(userControlManager.currentState);
+                //userControlOrchestrator.EnterState(userControlManager.SELECT);
+                userControlOrchestrator.userControlState.SetCharacterPhase(ECharacterPhase.IDLE);
+                userControlOrchestrator.userControlState.DeleteCA(E_CA_Type.MOVE_CHARACTER);
+                
             }
         }
         //if (playerControls.currentState == PlayerClickControls.PlayerState.Moving)
