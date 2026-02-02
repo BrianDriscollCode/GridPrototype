@@ -19,16 +19,25 @@ public class CA_MoveCharacter : MonoBehaviour
 
     public void Start()
     {
-        //cm_move = new CM_Move();
-        //cm_move.userControlManager = userControlManager;
-        //cm_move.playerControls = playerControls;
-        //cm_move.playerAnim = playerAnim;
-        cm_move = new CM_Move(userControlOrchestrator, userControlManager, playerControls, playerAnim);
-        cm_move.rotationSpeed = rotationSpeed;
+        InitializeCMMove();
+    }
+    private void InitializeCMMove()
+    {
+        if (cm_move == null)
+        {
+            cm_move = new CM_Move(userControlOrchestrator, userControlManager, playerControls, playerAnim);
+            cm_move.rotationSpeed = rotationSpeed;
+        }
     }
 
     public void Action()
     {
+        // Lazy initialization - create if not ready
+        if (cm_move == null)
+        {
+            InitializeCMMove();
+        }
+
         cm_move.Move();
     }
     //public void Move()
