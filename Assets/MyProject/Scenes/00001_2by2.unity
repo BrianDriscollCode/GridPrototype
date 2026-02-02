@@ -11344,93 +11344,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1256133454}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1264648335
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1264648337}
-  - component: {fileID: 1264648336}
-  m_Layer: 0
-  m_Name: UserControlManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1264648336
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1264648335}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 503ebbb07a1a614428566304b388e26e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UserControlManager
-  gameStateManager: {fileID: 1989859463}
-  selectedCharacter: {fileID: 71609198}
-  targetedTile: {fileID: 0}
-  hoveredCharacter: {fileID: 0}
-  currentStateString: 
-  CA_HoverTileSelection: {fileID: 0}
-  CA_MoveCharacter: {fileID: 0}
-  CA_SelectTileWithClick: {fileID: 0}
-  CA_IdleCharacter: {fileID: 0}
-  CA_HoverCharacter: {fileID: 0}
-  CA_SelectCharacterWithClick: {fileID: 0}
-  SelectionCA: {fileID: 11400000, guid: 89fab4919940f1f43bdc3f13340d37f6, type: 2}
-  MoveCA: {fileID: 11400000, guid: 11ae6e4eee79df24782abade76cdc683, type: 2}
-  currentControlMode: {fileID: 0}
-  camera: {fileID: 1890023091}
-  gridManager: {fileID: 685214079}
-  tileLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  enableHover: 1
-  hoverLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  _currentHoveredObject: {fileID: 0}
-  _currentHoveredGridPos: {x: -1, y: -1}
-  _originalMaterial: {fileID: 0}
-  _hoveredRenderer: {fileID: 0}
-  enableCharacterHover: 1
-  characterHoverLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  _currentCharacterSelected: {fileID: 0}
-  _currentCharacterGridPos: {x: 0, y: 0}
-  _hasRay: 0
-  _lastRayHit: 0
-  _lastHitPoint: {x: 0, y: 0, z: 0}
-  _lastRayLength: 100
-  _hasHoverRay: 0
-  _hoverHit: 0
-  _hoverHitPoint: {x: 0, y: 0, z: 0}
-  _hoverRayLength: 100
-  selectedTile: {fileID: 0}
-  enableCharacterMovement: 1
---- !u!4 &1264648337
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1264648335}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 24.53057, y: -18.40134, z: 24.10705}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1272414650
 GameObject:
   m_ObjectHideFlags: 0
@@ -16825,8 +16738,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugMenuGUI
   show: 1
-  userControlManager: {fileID: 1264648336}
+  userControlOrchestrator: {fileID: 1837473243}
   gridManager: {fileID: 685214079}
+  characterPhaseString: 
+  stateString: 
 --- !u!1 &1788757934
 GameObject:
   m_ObjectHideFlags: 0
@@ -17686,6 +17601,56 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1824306170}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1837473242
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1837473244}
+  - component: {fileID: 1837473243}
+  m_Layer: 0
+  m_Name: UserControlOrchestrator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1837473243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837473242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5eff0a8a09c0242b5b737ad7b155d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UserControlOrchestrator
+  selectedCharacter: {fileID: 71609198}
+  selectedTile: {fileID: 0}
+  camera: {fileID: 1890023091}
+  gridManager: {fileID: 685214079}
+  stateString: 
+  interfaceRaycastSelection: {fileID: 0}
+--- !u!4 &1837473244
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837473242}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 12.35006, y: 0.5, z: 6.27583}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1841380067
 GameObject:
   m_ObjectHideFlags: 0
@@ -20530,6 +20495,6 @@ SceneRoots:
   - {fileID: 2141032880}
   - {fileID: 1942319713}
   - {fileID: 1989859462}
-  - {fileID: 1264648337}
   - {fileID: 1492094673}
   - {fileID: 1226986402}
+  - {fileID: 1837473244}
