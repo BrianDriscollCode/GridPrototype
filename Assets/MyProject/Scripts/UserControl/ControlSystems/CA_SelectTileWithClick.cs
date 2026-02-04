@@ -14,13 +14,13 @@ public class CA_SelectTileWithClick : MonoBehaviour
     public void Action()
     {
         Debug.Log("Select Tile CA Run");
-        HandleClick();
+        HandleLeftClick();
     }
 
-    public void HandleClick()
+    private void HandleLeftClick()
     {
 
-        if (input.Player.LeftClick.IsPressed())
+        if (input.Player.LeftClick.WasPressedThisFrame())
         {
             Debug.Log("Handle Click is pressed");
 
@@ -54,9 +54,6 @@ public class CA_SelectTileWithClick : MonoBehaviour
                 {
                     Debug.Log("Tile In accessible");
                 }
-
-
-
             }
             else
             {

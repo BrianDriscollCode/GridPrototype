@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 [ExecuteAlways]
 public class GridManager : MonoBehaviour
@@ -184,6 +185,15 @@ public class GridManager : MonoBehaviour
         if (!IsValidGridPosition(gridX, gridZ)) return null;
         return gridTiles[gridX, gridZ];
 
+    }
+
+    public int GetTileDistance(Vector2Int pos1, Vector2Int pos2)
+    {
+        // Dat ChebyShev distance
+        int dx = Math.Abs(pos2.x - pos1.x);
+        int dy = Math.Abs(pos2.y - pos1.y);
+
+        return Math.Max(dx, dy);
     }
 
     // Visualize the grid in the editor

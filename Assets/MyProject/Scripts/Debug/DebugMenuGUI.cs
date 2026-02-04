@@ -71,6 +71,18 @@ public class DebugMenuGUI : MonoBehaviour
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight),
             userControlOrchestrator.userControlState.GetStateInfo() != null ? characterPhaseString : "None"))
             Debug.Log("Current State clicked");
+
+
+        GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "chracter Pos:");
+        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight),
+            userControlOrchestrator.selectedCharacter != null ? userControlOrchestrator.selectedCharacter.transform.position.ToString() : "no character selected"))
+            Debug.Log("Selected Character clicked");
+
+        // Row 4: Current Hovered Character
+        GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Hovered Character:");
+        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight),
+            userControlOrchestrator.selectedCharacter != null ? gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.transform.position).ToString() : "None"))
+            Debug.Log("Hovered Character clicked");
     }
 }
 

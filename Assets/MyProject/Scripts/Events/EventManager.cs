@@ -18,4 +18,11 @@ public static class EventManager
     //{
     //    ChangeGameState?.Invoke(state);
     //}
+
+    public static event UnityAction RightClickAttack;
+    
+    public static void OnRightClickAttack()
+    {
+        RightClickAttack?.Invoke();
+    }
 }

@@ -32,7 +32,6 @@ public class UserControlOrchestrator : MonoBehaviour
 
         battle_PlayerTurn_State = new IUSO_Battle_PlayerTurn_State();
         SwitchState(battle_PlayerTurn_State);
-        
     }
 
     public void Update()
