@@ -14,6 +14,8 @@ public enum ECharacterPhase
 }
 public class IUSO_Battle_PlayerTurn_State : IUSO_State
 {
+    private UserControlOrchestrator userControlOrchestrator;
+
     private CA_HoverTileSelection CA_HoverTileSelection;
     private CA_HoverCharacter CA_HoverCharacter;
     private CA_IdleCharacter CA_IdleCharacter;
@@ -34,8 +36,9 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private GridManager gridManager;
 
-    public void EnterState(UserControlOrchestrator userControlOrchestrator)
+    public void EnterState(UserControlOrchestrator USO)
     {
+        userControlOrchestrator = USO;
         EventManager.ClickedTile += HandleTileClicked;
         EventManager.RightClickAttack += HandleBasicAttack;
 
@@ -77,7 +80,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         //CA_MoveCharacter.userControlOrchestrator = userControlOrchestrator;
         //CA_MoveCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
         //CA_MoveCharacter.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
-        CreateMoveCA(userControlOrchestrator);
+        CreateMoveCA();
         selectedCharacter.GetComponent<PlayerAnim>().IdleAnimation();
 
         CA_SelectTileWithClick = GO.AddComponent<CA_SelectTileWithClick>();
@@ -97,7 +100,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         CA_BasicMeeleAttack.input = input;
     }
 
-    public void ExitState(UserControlOrchestrator userControlOrchestrator)
+    public void ExitState()
     {
         EventManager.ClickedTile -= HandleTileClicked;
         EventManager.RightClickAttack -= HandleBasicAttack;
@@ -121,14 +124,14 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
     }
 
 
-    public void Update(UserControlOrchestrator userControlOrchestrator)
+    public void Update()
     {
         CA_HoverTileSelection.Action();
         CA_SelectTileWithClick.Action();
         CA_BasicMeeleAttack.Action();
     }
 
-    public void FixedUpdate(UserControlOrchestrator userControlOrchestrator)
+    public void FixedUpdate()
     {
         if (characterPhase == ECharacterPhase.IDLE && CA_IdleCharacter != null)
         {
@@ -138,14 +141,14 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         {
             if (CA_MoveCharacter == null)
             {
-                CreateMoveCA(userControlOrchestrator);
+                CreateMoveCA();
             }
             CA_MoveCharacter.Action();
         }
     }
 
     // CA_MoveCharacter is managed with deletions and readding.
-    private void CreateMoveCA(UserControlOrchestrator userControlOrchestrator)
+    private void CreateMoveCA()
     {
         GameObject GO = userControlOrchestrator.gameObject;
         GameObject selectedCharacter = userControlOrchestrator.selectedCharacter;
@@ -246,6 +249,11 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
                 {
                     Debug.Log("Insufficient movement points!");
                     return;
+                }
+
+                if (playerStatSheet.movementPoints <= 0)
+                {
+                    userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
                 }
             }
         }

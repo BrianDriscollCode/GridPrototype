@@ -9,6 +9,7 @@ public class UserControlOrchestrator : MonoBehaviour
     // State
     public IUSO_State userControlState;
     public IUSO_State battle_PlayerTurn_State;
+    public IUSO_State battle_EnemyTurn_State;
 
     // Enable Raycast Selection
     [Header("System References")]
@@ -31,30 +32,32 @@ public class UserControlOrchestrator : MonoBehaviour
         interfaceRaycastSelection.input = input;
 
         battle_PlayerTurn_State = new IUSO_Battle_PlayerTurn_State();
+        battle_EnemyTurn_State = new IUSO_Battle_EnemyTurn_State();
         SwitchState(battle_PlayerTurn_State);
     }
 
     public void Update()
     {
         stateString = userControlState.ToString();
-        userControlState.Update(this);
+        userControlState.Update();
     }
 
     public void FixedUpdate()
     {
-        userControlState.FixedUpdate(this);
+        userControlState.FixedUpdate();
     }
 
     public void SwitchState(IUSO_State state)
     {
         if (userControlState != null)
-            userControlState.ExitState(this);
+            userControlState.ExitState();
         
 
         userControlState = state;
         userControlState.EnterState(this);
     }
 
+    // Manage state turn
 
 
 }
