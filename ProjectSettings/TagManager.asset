@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Character
   - Manager
+  - EnemyCharacter
+  - NonUserCharacter
   layers:
   - Default
   - TransparentFX

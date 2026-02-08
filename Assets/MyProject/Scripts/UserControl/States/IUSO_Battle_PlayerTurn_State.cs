@@ -151,6 +151,13 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         CreateCA(E_CA_Type.BASIC_MEELE_ATTACK);
     }
 
+    public void ResetState()
+    {
+        DestroyMultipleControlActions(allControlActions);
+        InitialiazeControlActions();
+
+    }
+
     public List<MonoBehaviour> GetAllControlActions()
     {
         return allControlActions;
@@ -386,6 +393,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
                 PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
                 characterPhase = ECharacterPhase.IDLE;
 
+                // *** State May Switch
                 turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
             }
         }
@@ -402,6 +410,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         {
             PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
             characterPhase = ECharacterPhase.IDLE;
+
+            // *** State May Switch
             turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
         }
     }
