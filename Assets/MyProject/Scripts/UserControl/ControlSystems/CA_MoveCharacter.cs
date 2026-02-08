@@ -4,41 +4,72 @@ using static PlayerClickControls;
 public class CA_MoveCharacter : MonoBehaviour
 {
     public CM_Move cm_move;
-
-    // new User Control Manager
     public UserControlOrchestrator userControlOrchestrator;
-
-    // will be deprecated
-    public UserControlManager userControlManager;
-
     public PlayerClickControls playerControls;
     public PlayerAnim playerAnim;
+    public TurnManager turnManager;
 
     [Header("Rotation Settings")]
-    public float rotationSpeed = 10f; // How fast the character rotates toward target
+    public float rotationSpeed = 10f;
 
     public void Start()
     {
         InitializeCMMove();
     }
+
     private void InitializeCMMove()
     {
+        // Find TurnManager
+        ManagerRegistry managerRegistry = GameObject.FindAnyObjectByType<ManagerRegistry>();
+        if (managerRegistry != null)
+        {
+            GameObject managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<TurnManager>() != null);
+            if (managerObj != null)
+            {
+                turnManager = managerObj.GetComponent<TurnManager>();
+            }
+        }
+
+        // Create CM_Move with only movement dependencies
         if (cm_move == null)
         {
-            cm_move = new CM_Move(userControlOrchestrator, userControlManager, playerControls, playerAnim);
+            cm_move = new CM_Move(playerControls, playerAnim);
             cm_move.rotationSpeed = rotationSpeed;
         }
     }
 
     public void Action()
     {
-        // Lazy initialization - create if not ready
+        // Lazy initialization
         if (cm_move == null)
         {
             InitializeCMMove();
         }
 
+        // Execute movement
         cm_move.Move();
+
+        // Handle completion (orchestration logic stays here)
+        if (cm_move.IsComplete)
+        {
+            OnMoveComplete();
+        }
     }
-    
+
+    private void OnMoveComplete()
+    {
+        Debug.Log("Movement complete - handling orchestration");
+
+        // Reset movement state
+        cm_move.Reset();
+
+        // Orchestration: Update phase
+        userControlOrchestrator.userControlState.SetCharacterPhase(ECharacterPhase.IDLE);
+
+        // Orchestration: Check turn completion
+        if (turnManager != null)
+        {
+            turnManager.CheckIfTurnComplete(playerControls.GetComponent<PlayerStatSheet>(), userControlOrchestrator);
+        }
+    }
 }

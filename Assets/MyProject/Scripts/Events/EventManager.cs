@@ -32,4 +32,10 @@ public static class EventManager
     {
         FinishBasicMeeleAttack?.Invoke();
     }
+
+    public static event UnityAction MovingComplete;
+    public static void OnMovingComplete()
+    {
+        MovingComplete?.Invoke();
+    }
 }

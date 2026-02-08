@@ -37,13 +37,15 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private GridManager gridManager;
 
+    private TurnManager turnManager;
+
     public void EnterState(UserControlOrchestrator USO)
     {
         allControlActions = new List<MonoBehaviour>();
         userControlOrchestrator = USO;
-        EventManager.ClickedTile += HandleTileClicked;
-        EventManager.RightClickAttack += HandleBasicAttack;
-        EventManager.FinishBasicMeeleAttack += HandleFinishBasicAttack;
+
+
+        RegisterEventHandlers();
 
         ManagerRegistry managerRegistry = GameObject.FindAnyObjectByType<ManagerRegistry>();
 
@@ -62,6 +64,12 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             {
                gridManager = managerObj.GetComponent<GridManager>();
             }
+
+            managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<TurnManager>() != null);
+            if (managerObj != null)
+            {
+                turnManager = managerObj.GetComponent<TurnManager>();
+            }
         }
 
         interfaceRaycastSelection = userControlOrchestrator.interfaceRaycastSelection;
@@ -75,6 +83,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
     {
         EventManager.ClickedTile -= HandleTileClicked;
         EventManager.RightClickAttack -= HandleBasicAttack;
+        EventManager.FinishBasicMeeleAttack -= HandleFinishBasicAttack;
+        EventManager.MovingComplete -= HandleMovingComplete;
 
         // Clean up all components
         DestroyComponent(CA_HoverTileSelection);
@@ -104,43 +114,17 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     public void FixedUpdate()
     {
-        if (characterPhase == ECharacterPhase.IDLE)
+        if (characterPhase == ECharacterPhase.IDLE && CA_IdleCharacter != null)
         {
-            //if (CA_IdleCharacter == null)
-            //{
-            //    CreateCA(E_CA_Type.IDLE_CHARACTER);
-            //    DeleteCA(E_CA_Type.MOVE_CHARACTER);
-            //}
-
-            if (CA_IdleCharacter != null)
-            {
-                CA_IdleCharacter.Action();
-            }
+            CA_IdleCharacter.Action();
         }
-        else if (characterPhase == ECharacterPhase.MOVE)
+        else if (characterPhase == ECharacterPhase.MOVE && CA_MoveCharacter != null)
         {
-            //if (CA_MoveCharacter == null)
-            //{
-            //    CreateCA(E_CA_Type.MOVE_CHARACTER);
-            //    DeleteCA(E_CA_Type.IDLE_CHARACTER);
-            //}
-            
-            if (CA_MoveCharacter != null)
-            {
-                CA_MoveCharacter.Action();
-            }
+            CA_MoveCharacter.Action();
         }
-        else if (characterPhase == ECharacterPhase.ATTACK)
+        else if (characterPhase == ECharacterPhase.ATTACK && CA_BasicMeeleAttack != null)
         {
-            //if (CA_BasicMeeleAttack == null)
-            //{
-            //    CreateBasicMeeleAttackCA();
-            //}
-
-            if (CA_BasicMeeleAttack != null)
-            {
-                CA_BasicMeeleAttack.Action();
-            }
+            CA_BasicMeeleAttack.Action();  
         }
     }
 
@@ -198,36 +182,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         }
     }
 
-    // *** Not sure I ever want to do this 
-    //
-    //public void DestroyPrevControlActions(MonoBehaviour action)
-    //{
-    //    // go trhough a list and delete everything but the matching action
-    //    if (allControlActions == null)
-    //    {
-    //        return;
-    //    }
-
-    //    for (int i = allControlActions.Count - 1; i >= 0; i--)
-    //    {
-    //        if (allControlActions[i] != action && allControlActions[i] != null)
-    //        {
-    //            DestroyComponent(allControlActions[i]);
-    //            allControlActions.RemoveAt(i);
-    //        }
-    //    }
-    //}
-
-    public void DestroyAllControlActions()
-    {
-        DestroyComponent(CA_HoverTileSelection);
-        DestroyComponent(CA_HoverCharacter);
-        DestroyComponent(CA_MoveCharacter);
-        DestroyComponent(CA_SelectTileWithClick);
-        DestroyComponent(CA_IdleCharacter);
-        DestroyComponent(CA_SelectCharacterWithClick);
-    }
-
+    // Factory pattern WOULD BE better, but need to focus on prototype
     // CA_MoveCharacter is managed with deletions and readding.
     private void CreateCA(E_CA_Type type)
     {
@@ -273,17 +228,6 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             CA_HoverTileSelection.interfaceRaycastSelection = interfaceRaycastSelection;
             allControlActions.Add(CA_HoverTileSelection);
         }
-    }
-
-    private void CreateBasicMeeleAttackCA()
-    {
-        GameObject GO = userControlOrchestrator.gameObject;
-        GameObject selectedCharacter = userControlOrchestrator.selectedCharacter;
-
-        CA_BasicMeeleAttack = GO.AddComponent<CA_BasicMeeleAttack>();
-        CA_BasicMeeleAttack.userControlOrchestrator = userControlOrchestrator;
-        CA_BasicMeeleAttack.input = input;
-        allControlActions.Add(CA_BasicMeeleAttack);
     }
 
     public void DeleteCA(E_CA_Type type)
@@ -368,6 +312,14 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         characterPhase = phase;
     }
 
+    private void RegisterEventHandlers()
+    {
+        EventManager.ClickedTile += HandleTileClicked;
+        EventManager.RightClickAttack += HandleBasicAttack;
+        EventManager.FinishBasicMeeleAttack += HandleFinishBasicAttack;
+        EventManager.MovingComplete += HandleMovingComplete;
+    }
+
     private void HandleTileClicked(Vector2Int gridPos)
     {
         if (characterPhase != ECharacterPhase.IDLE)
@@ -397,15 +349,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
                     return;
                 }
                  
-                // this should be done in the character move CM
-                //if (playerStatSheet.movementPoints <= 0 && playerStatSheet.attackPoints <= 0)
-                //{
-                //    userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
-                //}
             }
         }
-
-        characterPhase = ECharacterPhase.MOVE;
     }
 
     private void HandleBasicAttack()
@@ -425,16 +370,12 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
                 playerStatSheet.attackPoints -= 1;
                 characterPhase = ECharacterPhase.ATTACK;
             }
-            //// this should be done in the attack CM
-            //if (playerStatSheet.movementPoints <= 0 && playerStatSheet.attackPoints <= 0)
-            //{
-            //    userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
-            //}
         }
     }
 
     private void HandleFinishBasicAttack()
     {
+        Debug.Log("HandleFinishBasicAttack RUNNING!! **************");
         if (characterPhase == ECharacterPhase.ATTACK)
         {
             List<GameObject> characterList = movementPointsManager.characters;
@@ -442,8 +383,26 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
             if (matchingCharacter != null)
             {
+                PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
                 characterPhase = ECharacterPhase.IDLE;
+
+                turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
             }
+        }
+    }
+
+    private void HandleMovingComplete()
+    {
+        Debug.Log("HandleMovingcomplete RUNNING!! **************");
+
+        List<GameObject> characterList = movementPointsManager.characters;
+        GameObject matchingCharacter = characterList.Find(obj => obj == activeCharacter);
+
+        if (matchingCharacter != null)
+        {
+            PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
+            characterPhase = ECharacterPhase.IDLE;
+            turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
         }
     }
 }
