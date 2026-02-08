@@ -25,4 +25,11 @@ public static class EventManager
     {
         RightClickAttack?.Invoke();
     }
+
+    public static event UnityAction FinishBasicMeeleAttack;
+
+    public static void OnFinishBasicMeeleAttack()
+    {
+        FinishBasicMeeleAttack?.Invoke();
+    }
 }

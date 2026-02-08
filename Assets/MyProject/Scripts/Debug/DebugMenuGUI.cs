@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DebugMenuGUI : MonoBehaviour
@@ -24,71 +25,97 @@ public class DebugMenuGUI : MonoBehaviour
     {
         if (!show) return;
 
-                GUI.Box(new Rect(10, 10, 400, 140), "DEBUG MENU");
-
-        float startY = 40;
+        // Calculate dynamic height based on control actions count
+        int controlActionsCount = GetControlActionsCount();
         float rowHeight = 30;
+        float boxHeight = 170 + (controlActionsCount * rowHeight);
+
+        GUI.Box(new Rect(10, 10, 400, boxHeight), "DEBUG MENU");
+
+        float startY = 40;  
         float labelWidth = 150;
         float valueWidth = 230;
         float leftMargin = 20;
-
-        //// Row 1: Current Control Mode
-        //GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
-        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight), 
-        //    userControlManager.currentControlMode != null ? userControlManager.currentControlMode.name : "None"))
-        //    Debug.Log("Control Mode clicked");
-
-        //// Row 2: Current State
-        //GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "Current State:");
-        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight), 
-        //    userControlManager.currentStateString))
-        //    Debug.Log("Current State clicked");
-
-        //// Row 3: Selected Character
-        //GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "Selected Character:");
-        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight), 
-        //    userControlManager.selectedCharacter != null ? userControlManager.selectedCharacter.name : "None"))
-        //    Debug.Log("Selected Character clicked");
-
-        //// Row 4: Current Hovered Character
-        //GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Hovered Character:");
-        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight),
-        //    userControlManager.hoveredCharacter != null ? userControlManager.hoveredCharacter.ToString() : "None"))
-        //    Debug.Log("Hovered Character clicked");
 
         GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight),
             userControlOrchestrator.stateString != null ? stateString : "None"))
             Debug.Log("State String");
 
-        //GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
-        //if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight),
-        //    userControlOrchestrator.userControlState.GetStateInfo() != null ? userControlOrchestrator.userControlState.GetStateInfo().ToString() : "None"))
-        //    Debug.Log("State String");
-
-        //// Row 2: Current State
         GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "CharacterPhase:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight),
             userControlOrchestrator.userControlState.GetStateInfo() != null ? characterPhaseString : "None"))
             Debug.Log("Current State clicked");
-
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "chracter Pos:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight),
             userControlOrchestrator.selectedCharacter != null ? userControlOrchestrator.selectedCharacter.transform.position.ToString() : "no character selected"))
             Debug.Log("Selected Character clicked");
 
-        // Row 4: Current Hovered Character
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Hovered Character:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight),
             userControlOrchestrator.selectedCharacter != null ? gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.transform.position).ToString() : "None"))
             Debug.Log("Hovered Character clicked");
 
-        // Row 5: Current Hovered Character
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 4, labelWidth, rowHeight), "Turn: ");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 4, valueWidth, rowHeight),
             userControlOrchestrator.selectedCharacter != null ? gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.transform.position).ToString() : "None"))
             Debug.Log("Hovered Character clicked");
+
+        // Row 6+: All Control Actions (multiple rows)
+        DrawControlActionsList(leftMargin, startY + rowHeight * 5, labelWidth, valueWidth, rowHeight);
+    }
+
+    private void DrawControlActionsList(float leftMargin, float startY, float labelWidth, float valueWidth, float rowHeight)
+    {
+        GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Control Actions:");
+
+        if (userControlOrchestrator.userControlState is IUSO_Battle_PlayerTurn_State battleState)
+        {
+            List<MonoBehaviour> actions = battleState.GetAllControlActions();
+
+            if (actions == null || actions.Count == 0)
+            {
+                GUI.Label(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight), "None");
+                return;
+            }
+
+            for (int i = 0; i < actions.Count; i++)
+            {
+                string actionName = actions[i] != null ? actions[i].GetType().Name : "null";
+                float yPos = startY + (i * rowHeight);
+
+                if (GUI.Button(new Rect(leftMargin + labelWidth, yPos, valueWidth, rowHeight), actionName))
+                    Debug.Log($"Control Action [{i}]: {actionName}");
+            }
+        }
+        else
+        {
+            GUI.Label(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight), "N/A");
+        }
+    }
+
+    private int GetControlActionsCount()
+    {
+        if (userControlOrchestrator.userControlState is IUSO_Battle_PlayerTurn_State battleState)
+        {
+            List<MonoBehaviour> actions = battleState.GetAllControlActions();
+            return actions != null ? actions.Count : 0;
+        }
+        return 0;
+    }
+
+    private string GetControlActionsString()
+    {
+        if (userControlOrchestrator.userControlState is IUSO_Battle_PlayerTurn_State battleState)
+        {
+            List<MonoBehaviour> actions = battleState.GetAllControlActions();
+            if (actions == null || actions.Count == 0)
+                return "None";
+
+            return string.Join(", ", actions.ConvertAll(action => action != null ? action.GetType().Name : "null"));
+        }
+        return "N/A";
     }
 }
 

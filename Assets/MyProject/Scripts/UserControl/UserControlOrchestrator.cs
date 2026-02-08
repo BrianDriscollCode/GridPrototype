@@ -57,7 +57,4 @@ public class UserControlOrchestrator : MonoBehaviour
         userControlState.EnterState(this);
     }
 
-    // Manage state turn
-
-
 }

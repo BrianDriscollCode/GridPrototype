@@ -19,7 +19,6 @@ public class CA_SelectTileWithClick : MonoBehaviour
 
     private void HandleLeftClick()
     {
-
         if (input.Player.LeftClick.WasPressedThisFrame())
         {
             Debug.Log("Handle Click is pressed");
