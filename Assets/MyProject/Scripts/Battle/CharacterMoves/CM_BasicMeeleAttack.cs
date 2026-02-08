@@ -10,6 +10,7 @@ public class CM_BasicMeeleAttack
     public void Attack()
     {
         playerAnim.RunBasicMeeleAnimation();
+        playerAnim.ChangeAnimation("BasicMeeleAttack");
         Debug.Log("Running attack");
     }
 

@@ -48,6 +48,7 @@ public class CM_Move
             Vector3 next = Vector3.MoveTowards(playerControls.rb.position, target, step);
             playerControls.rb.MovePosition(next);
             playerAnim.RunAnimation();
+            playerAnim.ChangeAnimation("Run");
 
             if ((playerControls.rb.position - target).sqrMagnitude <= playerControls.arriveThreshold * playerControls.arriveThreshold)
             {
