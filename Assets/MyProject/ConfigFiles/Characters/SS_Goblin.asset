@@ -19,5 +19,5 @@ MonoBehaviour:
   wisdom: 2
   charisma: 3
   movementPoints: 5
-  attackPoints: 5
+  attackPoints: 1
   fightingSpirit: 5

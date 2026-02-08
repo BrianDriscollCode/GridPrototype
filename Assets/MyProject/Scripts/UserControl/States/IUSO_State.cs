@@ -7,10 +7,10 @@ using UnityEngine;
 //Name convention: IUSO_*GameState_*InterfaceState_State
 public interface IUSO_State
 {
-    void EnterState(UserControlOrchestrator userControlOrchestrator);
-    void ExitState(UserControlOrchestrator userControlOrchestrator);
-    public void Update(UserControlOrchestrator userControlOrchestrator);
-    public void FixedUpdate(UserControlOrchestrator userControlOrchestrator);
+    void EnterState(UserControlOrchestrator USO);
+    void ExitState();
+    public void Update();
+    public void FixedUpdate();
     void DeleteCA(E_CA_Type type);
     public InfoObject GetStateInfo();
 

@@ -17,6 +17,7 @@ public class CM_Idle
     public void Idle()
     {
         playerAnim.IdleAnimation();
+        playerAnim.ChangeAnimation("Idle");
         //if (playerControls.currentState == PlayerClickControls.PlayerState.Neutral)
         //{
         //playerAnim.IdleAnimation();

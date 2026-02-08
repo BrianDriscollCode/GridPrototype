@@ -18,4 +18,24 @@ public static class EventManager
     //{
     //    ChangeGameState?.Invoke(state);
     //}
+
+    public static event UnityAction RightClickAttack;
+    
+    public static void OnRightClickAttack()
+    {
+        RightClickAttack?.Invoke();
+    }
+
+    public static event UnityAction FinishBasicMeeleAttack;
+
+    public static void OnFinishBasicMeeleAttack()
+    {
+        FinishBasicMeeleAttack?.Invoke();
+    }
+
+    public static event UnityAction MovingComplete;
+    public static void OnMovingComplete()
+    {
+        MovingComplete?.Invoke();
+    }
 }

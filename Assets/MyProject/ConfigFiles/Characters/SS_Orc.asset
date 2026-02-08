@@ -18,6 +18,6 @@ MonoBehaviour:
   dexterity: 7
   wisdom: 2
   charisma: 5
-  movementPoints: 10
-  attackPoints: 10
+  movementPoints: 5
+  attackPoints: 2
   fightingSpirit: 10

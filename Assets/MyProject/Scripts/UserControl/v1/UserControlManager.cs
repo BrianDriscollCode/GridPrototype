@@ -83,7 +83,7 @@ public class UserControlManager : MonoBehaviour
         CA_HoverCharacter.userControlManager = this;
 
         CA_MoveCharacter = gameObject.AddComponent<CA_MoveCharacter>();
-        CA_MoveCharacter.userControlManager = this;
+        //CA_MoveCharacter.userControlManager = this;
         CA_MoveCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
         CA_MoveCharacter.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
         selectedCharacter.GetComponent<PlayerAnim>().IdleAnimation();
