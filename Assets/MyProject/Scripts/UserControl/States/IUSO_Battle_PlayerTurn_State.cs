@@ -135,19 +135,13 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         activeCharacter = selectedCharacter;
 
         CreateCA(E_CA_Type.HOVER_TILE_SELECTION);
-
-        //CA_HoverCharacter = GO.AddComponent<CA_HoverCharacter>();
-        //CA_HoverCharacter.userControlOrchestrator = userControlOrchestrator;
-
+        CreateCA(E_CA_Type.HOVER_CHARACTER);
         CreateCA(E_CA_Type.MOVE_CHARACTER);
         selectedCharacter.GetComponent<PlayerAnim>().IdleAnimation();
 
         CreateCA(E_CA_Type.SELECT_TILE_WITH_CLICK);
         CreateCA(E_CA_Type.IDLE_CHARACTER);
-
-        //CA_SelectCharacterWithClick = GO.AddComponent<CA_SelectCharacterWithClick>();
-        //CA_SelectCharacterWithClick.userControlOrchestrator = userControlOrchestrator;
-
+        CreateCA(E_CA_Type.SELECT_CHARACTER_WITH_CLICK);
         CreateCA(E_CA_Type.BASIC_MEELE_ATTACK);
     }
 
@@ -234,6 +228,16 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             CA_HoverTileSelection.userControlOrchestrator = userControlOrchestrator;
             CA_HoverTileSelection.interfaceRaycastSelection = interfaceRaycastSelection;
             allControlActions.Add(CA_HoverTileSelection);
+        }
+        else if (type == E_CA_Type.HOVER_CHARACTER)
+        {
+            CA_HoverCharacter = GO.AddComponent<CA_HoverCharacter>();
+            CA_HoverCharacter.userControlOrchestrator = userControlOrchestrator;
+        }
+        else if (type == E_CA_Type.SELECT_CHARACTER_WITH_CLICK)
+        {
+            CA_SelectCharacterWithClick = GO.AddComponent<CA_SelectCharacterWithClick>();
+            CA_SelectCharacterWithClick.userControlOrchestrator = userControlOrchestrator;
         }
     }
 
@@ -392,6 +396,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             {
                 PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
                 characterPhase = ECharacterPhase.IDLE;
+                userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");
 
                 // *** State May Switch
                 turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);

@@ -66,6 +66,7 @@ public class CA_HoverTileSelection : MonoBehaviour
                 if (interfaceRaycastSelection._currentHoveredObject != null)
                 {
                     OnHoverExit(interfaceRaycastSelection._currentHoveredObject, interfaceRaycastSelection._currentHoveredGridPos);
+                    
                 }
 
                 // Enter new hover
@@ -90,6 +91,22 @@ public class CA_HoverTileSelection : MonoBehaviour
         }
 
 
+    }
+    private void OnDestroy()
+    {
+        // Clean up hover state when component is destroyed
+        ClearHoverState();
+    }
+
+    public void ClearHoverState()
+    {
+        // Exit hover on current object if any
+        if (interfaceRaycastSelection != null && interfaceRaycastSelection._currentHoveredObject != null)
+        {
+            OnHoverExit(interfaceRaycastSelection._currentHoveredObject, interfaceRaycastSelection._currentHoveredGridPos);
+            interfaceRaycastSelection._currentHoveredObject = null;
+            interfaceRaycastSelection._currentHoveredGridPos = new Vector2Int(-1, -1);
+        }
     }
 
     protected virtual void OnHoverEnter(GameObject obj, Vector2Int gridPos)

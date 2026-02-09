@@ -16,7 +16,9 @@ public class CharacterRegisterManager : MonoBehaviour
         foreach (GameObject c in characters)
         {
             PartyTag partyTagGO = c.GetComponent<PartyTag>();
-            
+
+            if (partyTagGO.partyTag == null) return;
+
             if (partyTagGO.partyTag == PartyTag.CharacterPartyTag.PLAYER)
             {
                 playerParty.Add(c);

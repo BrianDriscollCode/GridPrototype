@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
+    [SerializeField] bool Active;
+
     [Header("Target")]
     public Transform target;
 
@@ -16,12 +18,17 @@ public class CameraFollow : MonoBehaviour
 
     void Start()
     {
+        if (!Active)
+            return;
         // lock rotation immediately
         transform.rotation = Quaternion.Euler(fixedRotationEuler);
     }
 
     void LateUpdate()
     {
+        if (!Active)
+            return;
+
         if (target == null) return;
 
         // keep camera at a fixed offset relative to player

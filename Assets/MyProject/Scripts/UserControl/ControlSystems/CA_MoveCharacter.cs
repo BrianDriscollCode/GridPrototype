@@ -65,6 +65,7 @@ public class CA_MoveCharacter : MonoBehaviour
 
         // Orchestration: Update phase
         userControlOrchestrator.userControlState.SetCharacterPhase(ECharacterPhase.IDLE);
+        userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");
 
         // Orchestration: Check turn completion
         if (turnManager != null)

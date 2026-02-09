@@ -16,7 +16,8 @@ public class CM_BasicMeeleAttack
 
     public void FinishBasicMeeleAttack()
     {
-        EventManager.OnFinishBasicMeeleAttack();
+        userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");
+        EventManager.OnFinishBasicMeeleAttack();    
     }
 }
 
