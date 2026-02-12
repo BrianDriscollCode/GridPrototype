@@ -4,8 +4,6 @@ using System.Linq;
 using UnityEngine;
 public class IUSO_Battle_EnemyTurn_State : IUSO_State
 {
-
-
     public ECharacterPhase characterPhase;
     private GameObject activeCharacter;
     private GridManager gridManager;

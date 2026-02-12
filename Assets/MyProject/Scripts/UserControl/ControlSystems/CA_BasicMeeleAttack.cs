@@ -37,7 +37,14 @@ public class CA_BasicMeeleAttack : MonoBehaviour
     {
         if (input.Player.RightClick.WasPressedThisFrame())
         {
-            EventManager.OnRightClickAttack();
+            int distance = userControlOrchestrator.gridManager.GetTileDistance(userControlOrchestrator.target.GetComponent<EntityGridLocation>().gridPos, userControlOrchestrator.selectedCharacter.GetComponent<EntityGridLocation>().gridPos);
+
+            // TODO: Prompt warn the player "Enemy too far away"
+            // Probably should move this to it's own script to handle
+            // checks and warnings
+
+            if (userControlOrchestrator.target && distance == 1)
+                EventManager.OnRightClickAttack();
         }
     }
 }

@@ -13,7 +13,7 @@ public class CA_SelectTileWithClick : MonoBehaviour
 
     public void Action()
     {
-        Debug.Log("Select Tile CA Run");
+        //Debug.Log("Select Tile CA Run");
         HandleLeftClick();
     }
 
@@ -39,19 +39,20 @@ public class CA_SelectTileWithClick : MonoBehaviour
                 userControlOrchestrator.selectedTile = hit.collider.gameObject;
 
                 Vector2Int gridPos = userControlOrchestrator.interfaceRaycastSelection.gridManager.WorldToGridPosition(hit.point);
+                Debug.Log("World Position of tile: " + userControlOrchestrator.interfaceRaycastSelection.gridManager.GridToWorldPosition(gridPos.x, gridPos.y));
                 //Debug.Log($"UserControlInterface::Clicked grid position: ({gridPos.x}, {gridPos.y})");
                 //Debug.Log("UserControlInterface::HasTileAt: " + userControlOrchestrator.interfaceRaycastSelection.gridManager.HasTileAt(gridPos.x, gridPos.y));
 
                 GridManager gridManager = userControlOrchestrator.interfaceRaycastSelection.gridManager;
 
-                if (gridManager.IsTileAccessible(gridPos.x, gridPos.y))
+                if (gridManager.IsTileAccessible(gridPos.x, gridPos.y) && !gridManager.IsGridPosOccupied(new Vector2Int(gridPos.x, gridPos.y)))
                 {
                     EventManager.OnClickedTile(gridPos);
-                    Debug.Log("CA_SelectTileWithClick::EventManager.OnClickedTile ran");
+                    Debug.Log("CA_SelectTileWithClick::EventManager.IsTileAccessible: Yes " + gridPos);
                 }
                 else
                 {
-                    Debug.Log("Tile In accessible");
+                    Debug.Log("CA_SelectTileWithClick::EventManager.IsTileAccessible: No " + gridPos);
                 }
             }
             else

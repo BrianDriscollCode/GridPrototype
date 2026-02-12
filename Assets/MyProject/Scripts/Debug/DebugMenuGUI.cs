@@ -28,7 +28,7 @@ public class DebugMenuGUI : MonoBehaviour
         // Calculate dynamic height based on control actions count
         int controlActionsCount = GetControlActionsCount();
         float rowHeight = 30;
-        float boxHeight = 200 + (controlActionsCount * rowHeight);
+        float boxHeight = 230 + (controlActionsCount * rowHeight); // Increased for new row
 
         GUI.Box(new Rect(10, 10, 400, boxHeight), "DEBUG MENU");
 
@@ -62,14 +62,31 @@ public class DebugMenuGUI : MonoBehaviour
             userControlOrchestrator.selectedCharacter != null ? gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.transform.position).ToString() : "None"))
             Debug.Log("Hovered Character clicked");
 
-        // Row 6: Selected Character Info
-        GUI.Label(new Rect(leftMargin, startY + rowHeight * 5, labelWidth, rowHeight), "Selected Character:");
+        // Row 6: Target
+        GUI.Label(new Rect(leftMargin, startY + rowHeight * 5, labelWidth, rowHeight), "Target:");
+        string targetInfo = GetTargetInfo();
+        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 5, valueWidth, rowHeight), targetInfo))
+            Debug.Log("Target Info: " + targetInfo);
+
+        // Row 7: Selected Character Info
+        GUI.Label(new Rect(leftMargin, startY + rowHeight * 6, labelWidth, rowHeight), "Selected Character:");
         string selectedCharInfo = GetSelectedCharacterInfo();
-        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 5, valueWidth, rowHeight), selectedCharInfo))
+        if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 6, valueWidth, rowHeight), selectedCharInfo))
             Debug.Log("Selected Character Info: " + selectedCharInfo);
 
-        // Row 7+: All Control Actions (multiple rows)
-        DrawControlActionsList(leftMargin, startY + rowHeight * 6, labelWidth, valueWidth, rowHeight);
+        // Row 8+: All Control Actions (multiple rows)
+        DrawControlActionsList(leftMargin, startY + rowHeight * 7, labelWidth, valueWidth, rowHeight);
+    }
+
+    private string GetTargetInfo()
+    {
+        if (userControlOrchestrator.target == null)
+            return "None";
+
+        GameObject target = userControlOrchestrator.target;
+        Vector2Int gridPos = gridManager.WorldToGridPosition(target.transform.position);
+        
+        return $"{target.name} @ {gridPos}";
     }
 
     private string GetSelectedCharacterInfo()

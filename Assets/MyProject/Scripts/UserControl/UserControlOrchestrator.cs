@@ -6,6 +6,9 @@ public class UserControlOrchestrator : MonoBehaviour
     public GameObject selectedCharacter;
     public GameObject selectedTile;
 
+    // Target
+    public GameObject target;
+
     // State
     public IUSO_State userControlState;
     public IUSO_State battle_PlayerTurn_State;
@@ -20,6 +23,8 @@ public class UserControlOrchestrator : MonoBehaviour
 
     // IUSO_State grab this to do raycasts (on enter state)
     public InterfaceRaycastSelection interfaceRaycastSelection;
+
+    public LayerMask characterHoverLayer;
 
 
     public void Start()

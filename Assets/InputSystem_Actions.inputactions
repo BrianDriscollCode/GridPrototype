@@ -37,7 +37,7 @@
                     "name": "Interact",
                     "type": "Button",
                     "id": "852140f2-7766-474d-8707-702459ba45f3",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "Hold",
                     "initialStateCheck": false
@@ -172,6 +172,15 @@
                     "name": "Down",
                     "type": "Button",
                     "id": "33e00762-af49-4f5f-87e8-a9ba3090c69d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "DebugEditorKey",
+                    "type": "Button",
+                    "id": "9a6bd75b-e9df-4c58-ade2-85ebabed294d",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -671,6 +680,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "LeftClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "540af87b-c631-48c6-92b8-1eaa4e2c881c",
+                    "path": "<Keyboard>/slash",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DebugEditorKey",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

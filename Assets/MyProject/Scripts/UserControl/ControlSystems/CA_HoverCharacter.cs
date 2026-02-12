@@ -10,6 +10,8 @@ public class CA_HoverCharacter : MonoBehaviour
     // will be deprecated
     public UserControlManager userControlManager;
 
+    public InterfaceRaycastSelection interfaceRaycastSelection;
+
     // Managing material and color swaps
     public Material _hoveredMaterialInstance;
     public Material _hoveredNoAccessMaterialInstance;
@@ -44,14 +46,14 @@ public class CA_HoverCharacter : MonoBehaviour
     {
         // Raycast from camera center (like a crosshair)
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = userControlManager.camera.ScreenPointToRay(mousePos);
-        userControlManager._hoverRay = ray;
-        userControlManager._hasHoverRay = true;
+        Ray ray = userControlOrchestrator.camera.ScreenPointToRay(mousePos);
+        interfaceRaycastSelection._hoverRay = ray;
+        interfaceRaycastSelection._hasHoverRay = true;
 
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, userControlManager.characterHoverLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, userControlOrchestrator.characterHoverLayer))
         { 
             isHittingCharacter = true;
-            userControlManager.hoveredCharacter = hit.collider.gameObject;
+            //userControlManager.hoveredCharacter = hit.collider.gameObject;
             Debug.Log("Hitting a character!!");
         }
         else

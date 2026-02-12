@@ -5,43 +5,47 @@ public class CA_SelectCharacterWithClick : MonoBehaviour
 {
     // new User Control Manager
     public UserControlOrchestrator userControlOrchestrator;
+    public InterfaceRaycastSelection interfaceRaycastSelection;
+    public InputSystem_Actions input;
 
     // will be deprecated
-    public UserControlManager userControlManager;
+    //public UserControlManager userControlManager;
 
     public void Action()
     {
-        HandleClick();
+        if (input.Player.LeftClick.IsPressed())
+        {
+            HandleClick();
+        }  
     }
 
     public void HandleClick()
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = userControlManager.camera.ScreenPointToRay(mousePos);
+        Ray ray = userControlOrchestrator.camera.ScreenPointToRay(mousePos);
 
-        userControlManager._lastRay = ray;
-        userControlManager._hasRay = true;
+        interfaceRaycastSelection._lastRay = ray;
+        interfaceRaycastSelection._hasRay = true;
 
 
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, userControlManager.characterHoverLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, userControlOrchestrator.characterHoverLayer))
         {
-            userControlManager._lastRayHit = true;
-            userControlManager._lastHitPoint = hit.point;
-            userControlManager._lastRayLength = hit.distance;
+            interfaceRaycastSelection._lastRayHit = true;
+            interfaceRaycastSelection._lastHitPoint = hit.point;
+            interfaceRaycastSelection._lastRayLength = hit.distance;
 
             // get game object hit
-            userControlManager.selectedCharacter = hit.collider.gameObject;
+            userControlOrchestrator.target = hit.collider.gameObject;
             
-
         }
         else
         {
-            Debug.Log("No hit");
-            userControlManager._lastRayHit = false;
-            userControlManager._lastRayLength = 100f;
+            //Debug.Log("No hit");
+            interfaceRaycastSelection._lastRayHit = false;
+            interfaceRaycastSelection._lastRayLength = 100f;
         }
 
-        Debug.DrawRay(ray.origin, ray.direction * userControlManager._lastRayLength,
-            userControlManager._lastRayHit ? Color.green : Color.red, 0.2f);
+        Debug.DrawRay(ray.origin, ray.direction * interfaceRaycastSelection._lastRayLength,
+            interfaceRaycastSelection._lastRayHit ? Color.green : Color.red, 0.2f);
     }
 }
