@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteAlways]
+//[ExecuteAlways]
 public class GridManager : MonoBehaviour
 {
     public GameObject characterPositionTrackerGO;
@@ -33,7 +33,22 @@ public class GridManager : MonoBehaviour
 
     void Start()
     {
+        //// Only run in Play mode to avoid issues when stopping the scene
+        //if (!Application.isPlaying) return;
+
+        if (characterPositionTrackerGO == null)
+        {
+            Debug.LogError("CharacterPositionTrackerGO is not assigned in GridManager");
+            return;
+        }
+
         characterPositionTracker = characterPositionTrackerGO.GetComponent<CharacterPositionTracker>();
+        if (characterPositionTracker == null)
+        {
+            Debug.LogError("CharacterPositionTracker component not found on assigned GameObject");
+            return;
+        }
+
         characterPositionList = characterPositionTracker.GetCharactersList();
 
         // Use level data dimensions if available
@@ -233,6 +248,8 @@ public class GridManager : MonoBehaviour
 
     public bool IsGridPosOccupied(Vector2Int gridPos)
     {
+        if (characterPositionTracker == null) return false;
+        
         foreach (Vector2Int pos in characterPositionTracker.GetCharactersList().Values)
         {
             bool xMatch = gridPos.x == pos.x;

@@ -54,7 +54,17 @@ public class CharacterPositionTracker : MonoBehaviour
         
         foreach (GameObject c in allCharacters)
         {
-            characterPositionList.Add(c, Vector2Int.RoundToInt(c.GetComponent<EntityGridLocation>().gridPos));
+            // Null check for destroyed objects or missing components
+            if (c == null) continue;
+            
+            EntityGridLocation entityGridLocation = c.GetComponent<EntityGridLocation>();
+            if (entityGridLocation == null)
+            {
+                Debug.LogWarning($"Character '{c.name}' is missing EntityGridLocation component");
+                continue;
+            }
+
+            characterPositionList.Add(c, Vector2Int.RoundToInt(entityGridLocation.gridPos));
         }
 
         return characterPositionList;
@@ -64,7 +74,12 @@ public class CharacterPositionTracker : MonoBehaviour
     {
         foreach (GameObject c in characterPositionList.Keys.ToList())
         {
-            characterPositionList[c] = Vector2Int.RoundToInt(c.GetComponent<EntityGridLocation>().gridPos);
+            if (c == null) continue;
+            
+            EntityGridLocation entityGridLocation = c.GetComponent<EntityGridLocation>();
+            if (entityGridLocation == null) continue;
+            
+            characterPositionList[c] = Vector2Int.RoundToInt(entityGridLocation.gridPos);
         }
     }
 }

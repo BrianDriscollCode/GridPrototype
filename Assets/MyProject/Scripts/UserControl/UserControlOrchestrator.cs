@@ -43,10 +43,9 @@ public class UserControlOrchestrator : MonoBehaviour
         interfaceRaycastSelection.gridManager = gridManager;
         interfaceRaycastSelection.input = input;
 
-        // Object establishing AI controls
-        enemyAI = new EnemyAI();
-
-
+        // Establishing AI controls
+        enemyAI = gameObject.AddComponent<EnemyAI>();
+        
         // Manage State
         battle_PlayerTurn_State = new IUSO_Battle_PlayerTurn_State();
         battle_EnemyTurn_State = new IUSO_Battle_EnemyTurn_State();
@@ -67,18 +66,16 @@ public class UserControlOrchestrator : MonoBehaviour
     public void SwitchState(IUSO_State state)
     {
         if (userControlState != null)
-            userControlState.ExitState();
-       
+            userControlState.ExitState();      
         userControlState = state;
-
+        
+        // Set enemyAI BEFORE calling EnterState
         if (userControlState is IUSO_Battle_EnemyTurn_State enemyState)
         {
             enemyState.enemyAI = enemyAI;
         }
-
-        userControlState.EnterState(this);
-
         
+        userControlState.EnterState(this);
     }
 
 }
