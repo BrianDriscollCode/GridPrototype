@@ -245,6 +245,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             CA_HoverCharacter = GO.AddComponent<CA_HoverCharacter>();
             CA_HoverCharacter.userControlOrchestrator = userControlOrchestrator;
             CA_HoverCharacter.interfaceRaycastSelection = interfaceRaycastSelection;
+            allControlActions.Add(CA_HoverCharacter);
         }
         else if (type == E_CA_Type.SELECT_CHARACTER_WITH_CLICK)
         {
@@ -252,6 +253,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             CA_SelectCharacterWithClick.userControlOrchestrator = userControlOrchestrator;
             CA_SelectCharacterWithClick.interfaceRaycastSelection = interfaceRaycastSelection;
             CA_SelectCharacterWithClick.input = input;
+            allControlActions.Add(CA_SelectCharacterWithClick);
         }
     }
 

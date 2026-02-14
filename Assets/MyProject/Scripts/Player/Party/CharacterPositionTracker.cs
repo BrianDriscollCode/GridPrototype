@@ -5,16 +5,33 @@ using System.Linq;
 
 public class CharacterPositionTracker : MonoBehaviour
 {
-    Dictionary<GameObject, Vector2Int> characterPositionList;
-    List<GameObject> allCharacters;
+    [SerializeField] private List<GameObject> characterKeys = new List<GameObject>();
+    [SerializeField] private List<Vector2Int> characterPositions = new List<Vector2Int>();
+    [SerializeField] private List<GameObject> allCharacters;
 
-    private void Start()
+    // This is the list that communicates with other components in scene
+    public Dictionary<GameObject, Vector2Int> characterPositionList;
+
+    private void Awake()
     {
         characterPositionList = new Dictionary<GameObject, Vector2Int>();
     }
 
     private void FixedUpdate()
     {
+        UpdateInspectorView();
+    }
+
+    private void UpdateInspectorView()
+    {
+        characterKeys.Clear();
+        characterPositions.Clear();
+        
+        foreach (var kvp in characterPositionList)
+        {
+            characterKeys.Add(kvp.Key);
+            characterPositions.Add(kvp.Value);
+        }
     }
 
     public void PrintCharacterPositionList()
@@ -28,8 +45,13 @@ public class CharacterPositionTracker : MonoBehaviour
     public Dictionary<GameObject, Vector2Int> GetCharactersList()
     {
         allCharacters = GameObject.FindGameObjectsWithTag("Character").ToList();
-        if (characterPositionList.Count() > 0)
-            characterPositionList.Clear();
+
+        if (characterPositionList != null)
+        {
+            if (characterPositionList.Count() > 0)
+                characterPositionList.Clear();
+        }
+        
         foreach (GameObject c in allCharacters)
         {
             characterPositionList.Add(c, Vector2Int.RoundToInt(c.GetComponent<EntityGridLocation>().gridPos));

@@ -10,6 +10,8 @@ public class CA_BasicMeeleAttack : MonoBehaviour
     public InputSystem_Actions input;
     public CM_BasicMeeleAttack CM_BasicMeeleAttack;
 
+    public bool IsEnemy = false;
+
     public float rotationSpeed = 10f;
 
 
@@ -29,7 +31,7 @@ public class CA_BasicMeeleAttack : MonoBehaviour
     }
 
     public void ActionHandler()
-    {
+    {     
         HandleRightClick();
     }
 

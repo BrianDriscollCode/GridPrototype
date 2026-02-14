@@ -1,7 +1,13 @@
 using UnityEngine;
 
+// must rename to ControlOrchestrator, this has been relegated to
+// running the whole battle state. Manages user and AI turns
+// by managin IUSO_State.
+
 public class UserControlOrchestrator : MonoBehaviour
 {
+    public EnemyAI enemyAI;
+
     // Enabling Raycast Selection
     public GameObject selectedCharacter;
     public GameObject selectedTile;
@@ -31,14 +37,20 @@ public class UserControlOrchestrator : MonoBehaviour
     {
         input = GameObject.Find("InputSystem").GetComponent<InputSystem>().input;
 
+        // Manage Raycast Func
         interfaceRaycastSelection = gameObject.AddComponent<InterfaceRaycastSelection>();
         interfaceRaycastSelection.camera = camera;
         interfaceRaycastSelection.gridManager = gridManager;
         interfaceRaycastSelection.input = input;
 
+        // Object establishing AI controls
+        enemyAI = new EnemyAI();
+
+
+        // Manage State
         battle_PlayerTurn_State = new IUSO_Battle_PlayerTurn_State();
         battle_EnemyTurn_State = new IUSO_Battle_EnemyTurn_State();
-        SwitchState(battle_PlayerTurn_State);
+        SwitchState(battle_EnemyTurn_State);
     }
 
     public void Update()
@@ -56,10 +68,17 @@ public class UserControlOrchestrator : MonoBehaviour
     {
         if (userControlState != null)
             userControlState.ExitState();
-        
-
+       
         userControlState = state;
+
+        if (userControlState is IUSO_Battle_EnemyTurn_State enemyState)
+        {
+            enemyState.enemyAI = enemyAI;
+        }
+
         userControlState.EnterState(this);
+
+        
     }
 
 }
