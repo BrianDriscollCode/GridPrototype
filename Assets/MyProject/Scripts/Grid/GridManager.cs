@@ -67,6 +67,53 @@ public class GridManager : MonoBehaviour
             ClearGrid();
             GenerateGrid();
         }
+        else
+        {
+            // If not generating, populate the array with existing tiles
+            PopulateGridFromExistingTiles();
+        }
+    }
+
+    // Populate the gridTiles array from existing tile GameObjects in the scene
+    // ******** This was purely AI generated with little review besides menu debug
+    // verification of output, needs review. Since prototype, only address
+    // if causes issues.
+    public void PopulateGridFromExistingTiles()
+    {
+        Debug.Log("Populating gridTiles array from existing tiles in scene...");
+
+        // Find all children of this GameObject (assuming tiles are children)
+        Transform[] children = GetComponentsInChildren<Transform>();
+        int foundTiles = 0;
+
+        foreach (Transform child in children)
+        {
+            // Skip self
+            if (child == transform) continue;
+
+            // Try to parse tile name (e.g., "Tile_3_5")
+            if (child.name.StartsWith("Tile_"))
+            {
+                string[] parts = child.name.Split('_');
+                if (parts.Length >= 3)
+                {
+                    if (int.TryParse(parts[1], out int gridX) && int.TryParse(parts[2], out int gridZ))
+                    {
+                        if (IsValidGridPosition(gridX, gridZ))
+                        {
+                            gridTiles[gridX, gridZ] = child.gameObject;
+                            foundTiles++;
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Found tile {child.name} with out-of-bounds position ({gridX}, {gridZ})");
+                        }
+                    }
+                }
+            }
+        }
+
+        Debug.Log($"Populated gridTiles array with {foundTiles} existing tiles");
     }
 
     public bool IsTileAccessible(int col, int row)
@@ -188,7 +235,7 @@ public class GridManager : MonoBehaviour
         tile.name = $"Tile_{gridX}_{gridZ}";
 
         // Store it in the grid
-        gridTiles[gridX, gridZ] = tile;
+        gridTiles[gridX, gridZ] = tile;     
     }
 
     // Remove a tile from the grid
@@ -226,8 +273,17 @@ public class GridManager : MonoBehaviour
     // Check if a tile exists at this grid position
     public bool HasTileAt(int gridX, int gridZ)
     {
-        if (!IsValidGridPosition(gridX, gridZ)) return false;
-        return gridTiles[gridX, gridZ] != null;
+        if (!IsValidGridPosition(gridX, gridZ))
+        {
+            Debug.LogWarning($"HasTileAt: Invalid position ({gridX}, {gridZ})");
+            return false;
+        }
+
+        GameObject tile = gridTiles[gridX, gridZ];
+        bool result = tile != null;
+
+        Debug.Log($"HasTileAt({gridX}, {gridZ}): tile={tile?.name ?? "null"}, result={result}");
+        return result;
     }
 
     public GameObject GetTile(int gridX, int gridZ)

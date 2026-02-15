@@ -13,12 +13,10 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     private GameObject activeEnemyCharacter;
     private GameObject targetPlayerCharacter;
 
-
     private GridManager gridManager;
     private MovementPointsManager movementPointsManager;
     private UserControlOrchestrator userControlOrchestrator;
     private CharacterRegisterManager characterRegisterManager;
-
 
     private CA_IdleCharacter CA_IdleCharacter;
     private CA_MoveCharacter CA_MoveCharacter;
@@ -26,7 +24,6 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     private List<MonoBehaviour> allControlActions;
 
     private InputSystem_Actions input;
-
 
     private List<GameObject> playerParty;
     private List<GameObject> enemyParty;
@@ -68,7 +65,6 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         InitializeControlActions();
         enemyAI.StartTurn(this);
     }
-
 
     // What does the enemy need to make a decision
     // PlayerPositions

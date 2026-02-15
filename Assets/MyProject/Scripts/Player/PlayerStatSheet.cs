@@ -5,6 +5,9 @@ public class PlayerStatSheet : MonoBehaviour
     // Scriptable Object
     public CharacterStatSheetScriptableObject statSheet;
 
+    // StateManagement Hook
+    public bool turnComplete;
+
     // Living Stats
     public int health;
 
@@ -24,6 +27,8 @@ public class PlayerStatSheet : MonoBehaviour
 
     public void Start()
     {
+        turnComplete = false;
+
         health = statSheet.health;
 
         strength = statSheet.strength;
