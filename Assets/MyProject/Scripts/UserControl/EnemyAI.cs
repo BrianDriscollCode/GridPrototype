@@ -58,9 +58,83 @@ public class EnemyAI : MonoBehaviour
             currentTarget = FindNearestTarget();
         } 
     }
+
+    private void RunEnemyProtoMove()
+    {
+        // Enemy already has target, this is a very temporary system
+
+        List<GameObject> availableTilesByTarget = FindNearestAvailableTilesWithinMoveDistance();
+
+        Dictionary<GameObject, int> tilesByDistance = new Dictionary<GameObject, int>();
+
+        foreach (GameObject tile in availableTilesByTarget)
+        {
+            Vector2Int tilePos = gridManager.WorldToGridPosition(tile.transform.position);
+            Vector2Int enemyPos = gridManager.WorldToGridPosition(currentEnemy.transform.position);
+            tilesByDistance.Add(tile, gridManager.GetTileDistance(tilePos, enemyPos));
+        }
+
+        List<GameObject> closestTiles = new List<GameObject>();
+        int closestVal = int.MaxValue;
+
+        foreach (KeyValuePair<GameObject, int> tilePair in tilesByDistance)
+        {
+            if (tilePair.Value <= closestVal)
+            {
+                if (tilePair.Value != closestVal)
+                {
+                    closestTiles.Clear();
+                }
+
+                closestVal = tilePair.Value;
+                closestTiles.Add(tilePair.Key);
+            }
+        }
+
+        GameObject chosenTile;
+        if (closestTiles.Count > 1)
+        {
+            // Choose random tile from closestTiles
+            int randomIndex = UnityEngine.Random.Range(0, closestTiles.Count);
+            chosenTile = closestTiles[randomIndex];
+
+            EnableMove();
+        }
+        else if (closestTiles.Count == 1)
+        {
+            chosenTile = closestTiles[0];
+
+            EnableMove();
+        }
+        else
+        {
+            // No tiles available
+            Debug.LogWarning("No closest tiles found");
+            SignalMoveEnded();
+            return;
+        }
+
+
+
+        // TODO: Use chosenTile for movement
+        Debug.Log($"Chosen tile: {chosenTile.name}");
+    }
+
+    private void EnableMove()
+    {
+
+        SignalMoveEnded();
+    }
+
+    private void SignalMoveEnded()
+    {
+
+    }
+
     public void StartTurn(IUSO_Battle_EnemyTurn_State battleState)
     {
         enemyBattleState = battleState;
+        RunEnemyProtoMove();
     }
 
     // For Prototype, needs to be refactored for more serious considerations
@@ -197,8 +271,8 @@ public class EnemyAI : MonoBehaviour
                 if (!gridManager.IsValidGridPosition(adjacentPos.x, adjacentPos.y))
                     continue;
 
-                //if (!gridManager.HasTileAt(adjacentPos.x, adjacentPos.y))
-                //    continue;
+                if (!gridManager.HasTileAt(adjacentPos.x, adjacentPos.y))
+                    continue;
 
                 // Check if tile is accessible (not blocked)
                 if (!gridManager.IsTileAccessible(adjacentPos.x, adjacentPos.y))

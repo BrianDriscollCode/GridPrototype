@@ -275,14 +275,14 @@ public class GridManager : MonoBehaviour
     {
         if (!IsValidGridPosition(gridX, gridZ))
         {
-            Debug.LogWarning($"HasTileAt: Invalid position ({gridX}, {gridZ})");
+            //Debug.LogWarning($"HasTileAt: Invalid position ({gridX}, {gridZ})");
             return false;
         }
 
         GameObject tile = gridTiles[gridX, gridZ];
         bool result = tile != null;
 
-        Debug.Log($"HasTileAt({gridX}, {gridZ}): tile={tile?.name ?? "null"}, result={result}");
+        //Debug.Log($"HasTileAt({gridX}, {gridZ}): tile={tile?.name ?? "null"}, result={result}");
         return result;
     }
 
