@@ -1,186 +1,220 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Windows;
 
+/// <summary>
+/// AI decision-making component for enemy turns.
+/// Initialized by UserControlOrchestrator with all dependencies.
+/// </summary>
 public class EnemyAI : MonoBehaviour
 {
-    public ManagerRegistry managerRegistry;
-    public MovementPointsManager movementPointsManager;
-    public CharacterRegisterManager characterRegisterManager;
-    public IUSO_Battle_EnemyTurn_State enemyBattleState;
-
-    public GridManager gridManager;
+    // Dependencies injected by orchestrator
+    private GridManager gridManager;
+    private MovementPointsManager movementPointsManager;
+    private CharacterRegisterManager characterRegisterManager;
 
     private List<GameObject> playerParty;
     private List<GameObject> enemyParty;
 
-    public GameObject currentEnemy;
-    public GameObject currentTarget;
+    // AI-specific state
+    public GameObject currentEnemy { get; private set; }
+    public GameObject currentTarget { get; private set; }
 
-    // Temp ingame vars
-    int attackDistance = 1;
+    private int attackDistance = 1;
+    private bool isInitialized = false;
 
-    private void Start()
+    /// <summary>
+    /// Called by UserControlOrchestrator to inject dependencies
+    /// </summary>
+    public void Initialize(
+        GridManager grid,
+        MovementPointsManager movePoints,
+        CharacterRegisterManager charRegister)
     {
-        managerRegistry = GameObject.FindAnyObjectByType<ManagerRegistry>();
+        gridManager = grid;
+        movementPointsManager = movePoints;
+        characterRegisterManager = charRegister;
 
-        if (managerRegistry != null)
+        if (characterRegisterManager != null)
         {
-            GameObject managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<MovementPointsManager>() != null);
-            if (managerObj != null)
-            {
-                movementPointsManager = managerObj.GetComponent<MovementPointsManager>();
-            }
-            managerObj = null;
-
-
-            managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<GridManager>() != null);
-            if (managerObj != null)
-            {
-                gridManager = managerObj.GetComponent<GridManager>();
-            }
-            managerObj = null;
-
-            managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<CharacterRegisterManager>() != null);
-            if (managerObj != null)
-            {
-                characterRegisterManager = managerObj.GetComponent<CharacterRegisterManager>();
-            }
-            managerObj = null;
-
-            // Gets all enemy and player characters in party
             playerParty = characterRegisterManager.playerParty;
             enemyParty = characterRegisterManager.enemyParty;
+        }
 
-            SetCurrentEnemy();
-            currentTarget = FindNearestTarget();
-        } 
+        isInitialized = true;
+        Debug.Log("EnemyAI initialized successfully");
     }
 
-    private void RunEnemyProtoMove()
+    /// <summary>
+    /// Main entry point - called by IUSO_Battle_EnemyTurn_State
+    /// </summary>
+    public void ExecuteTurn()
     {
-        // Enemy already has target, this is a very temporary system
-
-        List<GameObject> availableTilesByTarget = FindNearestAvailableTilesWithinMoveDistance();
-
-        Dictionary<GameObject, int> tilesByDistance = new Dictionary<GameObject, int>();
-
-        foreach (GameObject tile in availableTilesByTarget)
+        if (!isInitialized)
         {
-            Vector2Int tilePos = gridManager.WorldToGridPosition(tile.transform.position);
-            Vector2Int enemyPos = gridManager.WorldToGridPosition(currentEnemy.transform.position);
-            tilesByDistance.Add(tile, gridManager.GetTileDistance(tilePos, enemyPos));
-        }
-
-        List<GameObject> closestTiles = new List<GameObject>();
-        int closestVal = int.MaxValue;
-
-        foreach (KeyValuePair<GameObject, int> tilePair in tilesByDistance)
-        {
-            if (tilePair.Value <= closestVal)
-            {
-                if (tilePair.Value != closestVal)
-                {
-                    closestTiles.Clear();
-                }
-
-                closestVal = tilePair.Value;
-                closestTiles.Add(tilePair.Key);
-            }
-        }
-
-        GameObject chosenTile;
-        if (closestTiles.Count > 1)
-        {
-            // Choose random tile from closestTiles
-            int randomIndex = UnityEngine.Random.Range(0, closestTiles.Count);
-            chosenTile = closestTiles[randomIndex];
-
-            EnableMove();
-        }
-        else if (closestTiles.Count == 1)
-        {
-            chosenTile = closestTiles[0];
-
-            EnableMove();
-        }
-        else
-        {
-            // No tiles available
-            Debug.LogWarning("No closest tiles found");
-            SignalMoveEnded();
+            Debug.LogError("EnemyAI.ExecuteTurn() called before initialization!");
             return;
         }
 
+        SelectActiveEnemy();
 
+        if (currentEnemy == null)
+        {
+            Debug.LogWarning("No valid enemy to act");
+            return;
+        }
 
-        // TODO: Use chosenTile for movement
-        Debug.Log($"Chosen tile: {chosenTile.name}");
+        SelectTarget();
+
+        if (currentTarget == null)
+        {
+            Debug.LogWarning("No valid target found");
+            return;
+        }
+
+        Debug.Log($"Enemy Turn: {currentEnemy.name} {currentTarget.name}");
+
+        // Decide and execute action
+        if (IsTargetInAttackRange())
+        {
+            ExecuteAttack();
+        }
+        else
+        {
+            ExecuteMove();
+        }
     }
 
-    private void EnableMove()
-    {
-
-        SignalMoveEnded();
-    }
-
-    private void SignalMoveEnded()
-    {
-
-    }
-
-    public void StartTurn(IUSO_Battle_EnemyTurn_State battleState)
-    {
-        enemyBattleState = battleState;
-        RunEnemyProtoMove();
-    }
-
-    // For Prototype, needs to be refactored for more serious considerations
-    private void SetCurrentEnemy()
+    private void SelectActiveEnemy()
     {
         foreach (GameObject enemy in enemyParty)
         {
-            PlayerStatSheet statSheet = enemy.GetComponent<PlayerStatSheet>();
+            PlayerStatSheet stats = enemy.GetComponent<PlayerStatSheet>();
+            if (stats == null) continue;
 
-            int AP = statSheet.attackPoints;
-            int MP = statSheet.movementPoints;
-            bool turnComplete = statSheet.turnComplete;
-
-            if (AP > 0 || MP > 0 && !turnComplete)
+            if ((stats.attackPoints > 0 || stats.movementPoints > 0) && !stats.turnComplete)
             {
                 currentEnemy = enemy;
+                Debug.Log($"Selected enemy: {currentEnemy.name}");
                 return;
+            }
+        }
+
+        currentEnemy = null;
+    }
+
+    private void SelectTarget()
+    {
+        currentTarget = FindNearestPlayer();
+    }
+
+    private bool IsTargetInAttackRange()
+    {
+        if (currentEnemy == null || currentTarget == null) return false;
+
+        Vector2Int enemyPos = gridManager.characterPositionList[currentEnemy];
+        Vector2Int targetPos = gridManager.characterPositionList[currentTarget];
+
+        return gridManager.GetTileDistance(enemyPos, targetPos) <= attackDistance;
+    }
+
+    private void ExecuteAttack()
+    {
+        Debug.Log($"{currentEnemy.name} attacking {currentTarget.name}");
+        // TODO: Implement attack
+    }
+
+    private void ExecuteMove()
+    {
+        Debug.Log($"{currentEnemy.name} moving towards {currentTarget.name}");
+        GameObject destinationTile = ChooseBestMoveTile();
+
+        if (destinationTile != null)
+        {
+            Debug.Log($"Moving to: {destinationTile.name}");
+            // TODO: Execute movement
+
+            PlayerClickControls enemyControls = currentEnemy.GetComponent<PlayerClickControls>();
+
+            Vector2Int fromGridPos = gridManager.WorldToGridPosition(currentEnemy.transform.position);
+            int fromDestinationX = fromGridPos.x;
+            int fromDestinationY = fromGridPos.y;
+            Vector3 fromPosVector = new Vector3(fromDestinationX, 0, fromDestinationY);
+            enemyControls.SetFromPos(fromPosVector);
+
+            Vector2Int destinationGridPos = gridManager.WorldToGridPosition(currentTarget.transform.position);
+            int destinationX = destinationGridPos.x;
+            int destinationY = destinationGridPos.y;
+            Vector3 destinationPosVector = new Vector3(destinationX, 0, destinationY);
+            enemyControls.SetToPos(destinationPosVector);
+
+            Vector3 storedFromPos = enemyControls.GetFromPos();
+            Vector3 storedToPos = enemyControls.GetToPos();
+
+            if (storedFromPos != null && storedToPos != null)
+            {
+                EventManager.OnMoveEnemy();
+            }
+            else
+            {
+                Debug.Log("one or more stored positions are null");
             }
         }
     }
 
-    public bool AnyPlayersWithinAttackDistance()
+    public GameObject ChooseBestMoveTile()
     {
-        return false;
+        List<GameObject> availableTiles = FindReachableTilesNearTarget();
+
+        if (availableTiles.Count == 0) return null;
+
+        // Find closest tiles to enemy position
+        Vector2Int enemyPos = gridManager.WorldToGridPosition(currentEnemy.transform.position);
+        List<GameObject> closestTiles = new List<GameObject>();
+        int minDistance = int.MaxValue;
+
+        foreach (GameObject tile in availableTiles)
+        {
+            Vector2Int tilePos = gridManager.WorldToGridPosition(tile.transform.position);
+            int distance = gridManager.GetTileDistance(enemyPos, tilePos);
+
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestTiles.Clear();
+                closestTiles.Add(tile);
+            }
+            else if (distance == minDistance)
+            {
+                closestTiles.Add(tile);
+            }
+        }
+
+        // Pick random from equally good options
+        return closestTiles.Count > 0
+            ? closestTiles[Random.Range(0, closestTiles.Count)]
+            : null;
     }
 
-    public GameObject FindNearestTarget()
+    public GameObject FindNearestPlayer()
     {
         if (currentEnemy == null || !gridManager.characterPositionList.ContainsKey(currentEnemy))
             return null;
 
-        Vector2Int enemyGridPosition = gridManager.characterPositionList[currentEnemy];
+        Vector2Int enemyPos = gridManager.characterPositionList[currentEnemy];
         GameObject closestPlayer = null;
         int shortestDistance = int.MaxValue;
 
-        foreach (GameObject playerCharacter in playerParty)
+        foreach (GameObject player in playerParty)
         {
-            if (gridManager.characterPositionList.ContainsKey(playerCharacter))
+            if (gridManager.characterPositionList.ContainsKey(player))
             {
-                Vector2Int playerGridPosition = gridManager.characterPositionList[playerCharacter];
-                int distance = gridManager.GetTileDistance(enemyGridPosition, playerGridPosition);
+                Vector2Int playerPos = gridManager.characterPositionList[player];
+                int distance = gridManager.GetTileDistance(enemyPos, playerPos);
 
                 if (distance < shortestDistance)
                 {
                     shortestDistance = distance;
-                    closestPlayer = playerCharacter;
+                    closestPlayer = player;
                 }
             }
         }
@@ -188,108 +222,59 @@ public class EnemyAI : MonoBehaviour
         return closestPlayer;
     }
 
-    public void RunAttack()
-    {
-
-    }
-
-    public List<GameObject> FindNearestAvailableTilesWithinMoveDistance()
+    public List<GameObject> FindReachableTilesNearTarget()
     {
         List<GameObject> availableTiles = new List<GameObject>();
 
-        if (currentEnemy == null || currentTarget == null)
-        {
-            Debug.LogWarning("Current enemy or target is null");
-            return availableTiles;
-        }
-
-        if (!gridManager.characterPositionList.ContainsKey(currentEnemy) ||
+        if (currentEnemy == null || currentTarget == null ||
+            !gridManager.characterPositionList.ContainsKey(currentEnemy) ||
             !gridManager.characterPositionList.ContainsKey(currentTarget))
         {
-            Debug.LogWarning("Enemy or target not found in character position list");
             return availableTiles;
         }
 
         Vector2Int enemyPos = gridManager.characterPositionList[currentEnemy];
         Vector2Int targetPos = gridManager.characterPositionList[currentTarget];
 
-        PlayerStatSheet enemyStats = currentEnemy.GetComponent<PlayerStatSheet>();
-        if (enemyStats == null)
-        {
-            Debug.LogWarning("Enemy missing PlayerStatSheet component");
-            return availableTiles;
-        }
+        PlayerStatSheet stats = currentEnemy.GetComponent<PlayerStatSheet>();
+        if (stats == null) return availableTiles;
 
-        int enemyMovementPoints = enemyStats.movementPoints;
+        int movementPoints = stats.movementPoints;
 
-        // BFS to find tiles around the target, expanding outward
+        // BFS from target outward
         Queue<Vector2Int> toCheck = new Queue<Vector2Int>();
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
 
-        // Start with the target position
         toCheck.Enqueue(targetPos);
         visited.Add(targetPos);
 
-        // 8 directions: up, down, left, right, and 4 diagonals
         Vector2Int[] directions = new Vector2Int[]
         {
-            new Vector2Int(0, 1),   // North
-            new Vector2Int(1, 0),   // East
-            new Vector2Int(0, -1),  // South
-            new Vector2Int(-1, 0),  // West
-            new Vector2Int(1, 1),   // NE
-            new Vector2Int(1, -1),  // SE
-            new Vector2Int(-1, -1), // SW
-            new Vector2Int(-1, 1)   // NW
+            new Vector2Int(0, 1), new Vector2Int(1, 0),
+            new Vector2Int(0, -1), new Vector2Int(-1, 0),
+            new Vector2Int(1, 1), new Vector2Int(1, -1),
+            new Vector2Int(-1, -1), new Vector2Int(-1, 1)
         };
-
-        int whileRun = 0;
-        
 
         while (toCheck.Count > 0)
         {
-            whileRun += 1;
-            Debug.Log("While Loop run: " + whileRun);
-
             Vector2Int currentPos = toCheck.Dequeue();
 
-            int tileCheck = 0;
-            // Check all adjacent tiles
             foreach (Vector2Int dir in directions)
             {
-                tileCheck += 1;
-                Debug.Log("Tile check run: " + tileCheck);
                 Vector2Int adjacentPos = currentPos + dir;
 
-                // Skip if already visited
-                if (visited.Contains(adjacentPos))
-                    continue;
-
+                if (visited.Contains(adjacentPos)) continue;
                 visited.Add(adjacentPos);
 
-                // Check if the tile is valid and exists
-                if (!gridManager.IsValidGridPosition(adjacentPos.x, adjacentPos.y))
-                    continue;
+                if (!gridManager.IsValidGridPosition(adjacentPos.x, adjacentPos.y)) continue;
+                if (!gridManager.HasTileAt(adjacentPos.x, adjacentPos.y)) continue;
+                if (!gridManager.IsTileAccessible(adjacentPos.x, adjacentPos.y)) continue;
+                if (gridManager.IsGridPosOccupied(adjacentPos)) continue;
 
-                if (!gridManager.HasTileAt(adjacentPos.x, adjacentPos.y))
-                    continue;
+                int moveCost = movementPointsManager.CalculateMovementCost(enemyPos, adjacentPos);
 
-                // Check if tile is accessible (not blocked)
-                if (!gridManager.IsTileAccessible(adjacentPos.x, adjacentPos.y))
-                    continue;
-
-                // Check if tile is occupied by another character
-                if (gridManager.IsGridPosOccupied(adjacentPos))
-                    continue;
-
-                // Calculate movement cost from enemy to this tile
-                int movementCost = movementPointsManager.CalculateMovementCost(enemyPos, adjacentPos);
-
-                Debug.Log(tileCheck + " - Movement Cost: " + movementCost);
-                Debug.Log(tileCheck + " - Enemy Movement Points: " + enemyMovementPoints);
-
-                // If within movement range, add to available tiles
-                if (movementCost <= enemyMovementPoints)
+                if (moveCost <= movementPoints)
                 {
                     GameObject tile = gridManager.GetTile(adjacentPos.x, adjacentPos.y);
                     if (tile != null && !availableTiles.Contains(tile))
@@ -299,8 +284,6 @@ public class EnemyAI : MonoBehaviour
                 }
                 else
                 {
-                    // Still expand search outward to find tiles that might be reachable
-                    // (closer tiles around the target that we haven't checked yet)
                     toCheck.Enqueue(adjacentPos);
                 }
             }
@@ -308,37 +291,4 @@ public class EnemyAI : MonoBehaviour
 
         return availableTiles;
     }
-
-    //public List<GameObject> FindNearestAvailableTilesWithinMoveDistance()
-    //{
-
-    //    // Get adjacent tiles of target
-
-    //    // Check distance using the grid manager and see if 
-    //    // enemy has enough move points to reach any of those tiles
-
-    //    // If no, find adjacent tiles of the adjacent tiles of the target
-
-    //    // Check distance again and if enemy has enough move points to reach any
-
-    //    // repeat this until matches are found, store the matches
-
-
-    //    // A* Pathfinding to closest adjacent tile of target
-
-
-    //    List<GameObject> GO = new List<GameObject>();
-    //    return GO;
-    //}
-    public Vector2Int ChooseTile()
-    {
-        Vector2Int v2i = new Vector2Int();
-        return v2i;
-    }
-
-    public void move()
-    {
-
-    }
-
 }

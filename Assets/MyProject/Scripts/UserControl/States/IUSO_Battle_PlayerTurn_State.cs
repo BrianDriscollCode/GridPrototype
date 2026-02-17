@@ -137,6 +137,11 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         {
             gridManager.characterPositionTracker.PrintCharacterPositionList();
         }
+
+        if (input.Player.Exit.IsPressed())
+        {
+            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+        }
     }
 
     private void InitialiazeControlActions()

@@ -3,8 +3,8 @@ using UnityEngine;
 public class PlayerClickControls : MonoBehaviour
 {
 
-    public Vector3 fromPos;
-    public Vector3 toPos;
+    private Vector3 fromPos;
+    private Vector3 toPos;
 
     public GridManager gridManager;
 
@@ -52,5 +52,25 @@ public class PlayerClickControls : MonoBehaviour
     private void FixedUpdate()
     {
 
+    }
+
+    public Vector3 GetFromPos()
+    {
+        return fromPos;
+    }
+    
+    public void SetFromPos(Vector3 pos)
+    {
+        fromPos = pos;
+    }
+
+    public Vector3 GetToPos()
+    {
+        return toPos;
+    }
+
+    public void SetToPos(Vector3 pos)
+    {
+        toPos = pos;
     }
 }

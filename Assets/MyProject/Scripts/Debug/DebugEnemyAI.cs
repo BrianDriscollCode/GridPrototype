@@ -30,7 +30,7 @@ public class DebugEnemyAI : MonoBehaviour
         // Calculate dynamic height based on control actions count
         int controlActionsCount = GetControlActionsCount();
         float rowHeight = 30;
-        float boxHeight = 320 + (controlActionsCount * rowHeight); // Increased for grid tiles button
+        float boxHeight = 350 + (controlActionsCount * rowHeight); // Increased for Run Enemy Move button
 
         GUI.Box(new Rect(10, 10, 400, boxHeight), "AI DEBUG MENU");
 
@@ -77,6 +77,20 @@ public class DebugEnemyAI : MonoBehaviour
         {
             cachedGridTilesInfo = GetGridTilesInfo();
             Debug.Log("Refreshed Grid Tiles: " + cachedGridTilesInfo);
+        }
+
+        // Run Enemy Proto Move button
+        if (GUI.Button(new Rect(leftMargin, startY + rowHeight * 7, labelWidth + valueWidth, rowHeight), "Run Enemy Proto Move"))
+        {
+            if (enemyAI != null)
+            {
+                Debug.Log("Running Enemy Proto Move...");
+                enemyAI.ExecuteTurn();
+            }
+            else
+            {
+                Debug.LogError("EnemyAI is null!");
+            }
         }
 
         /// Commented out code used for reference
@@ -164,7 +178,7 @@ public class DebugEnemyAI : MonoBehaviour
             return "EnemyAI is null";
         }
 
-        List<GameObject> availableTiles = enemyAI.FindNearestAvailableTilesWithinMoveDistance();
+        List<GameObject> availableTiles = enemyAI.FindReachableTilesNearTarget();
 
         if (availableTiles == null || availableTiles.Count == 0)
             return "None";

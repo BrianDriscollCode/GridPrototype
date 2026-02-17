@@ -25,7 +25,7 @@ public class CM_Move
 
     public void Move()
     {
-        Vector3 target = playerControls.toPos;
+        Vector3 target = playerControls.GetToPos();
         float step = playerControls.moveSpeed * Time.fixedDeltaTime;
 
         if (playerControls.rb != null)

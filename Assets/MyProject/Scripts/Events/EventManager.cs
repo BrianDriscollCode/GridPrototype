@@ -45,4 +45,13 @@ public static class EventManager
     {
         AttackDamageGiven?.Invoke();
     }
+
+    public static event UnityAction MoveEnemy;
+
+    public static void OnMoveEnemy()
+    {
+        MoveEnemy?.Invoke();
+    }
+
+    
 }
