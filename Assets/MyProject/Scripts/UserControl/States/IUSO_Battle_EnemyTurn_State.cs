@@ -19,6 +19,7 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     private List<MonoBehaviour> allControlActions;
 
     private InputSystem_Actions input;
+    private TurnManager turnManager;
 
     public void EnterState(UserControlOrchestrator UCO)
     {
@@ -26,17 +27,49 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         orchestrator = UCO;
         enemyAI = UCO.enemyAI;  // Get AI from orchestrator
         gridManager = UCO.gridManager;
+        turnManager = GameObject.FindFirstObjectByType<TurnManager>();
 
         characterPhase = ECharacterPhase.IDLE;
 
         EventManager.MoveEnemy += HandleMoveEnemy;
         EventManager.MovingComplete += HandleFinishMoving;
+        EventManager.FinishBasicMeeleAttack += HandleFinishAttack;
+        EventManager.AttackDamageGiven += HandleAttackDamageGiven;
 
         Debug.Log("=== ENEMY TURN START ===");
 
         input = orchestrator.input;
         // Execute AI turn
         enemyAI.ExecuteTurn();
+    }
+
+    private void HandleAttackDamageGiven()
+    {
+        GameObject enemy = enemyAI.currentEnemy;
+        PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
+
+        GameObject player = enemyAI.currentTarget;
+        PlayerStatSheet playerStatSheet = player.GetComponent<PlayerStatSheet>();
+        HealthBar playerHealthBar = player.GetComponent<HealthBar>();
+
+        playerStatSheet.health -= enemyStatSheet.strength;
+        playerHealthBar.SetHealth(playerStatSheet.health, 10);
+    }
+
+    private void HandleFinishAttack()
+    {
+        GameObject enemy = enemyAI.currentEnemy;
+        PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
+
+        //GameObject player = enemyAI.currentTarget;
+        //PlayerStatSheet playerStatSheet = player.GetComponent<PlayerStatSheet>();
+
+        //playerStatSheet.health -= enemyStatSheet.strength;
+
+        enemyStatSheet.attackPoints = 0;
+
+        turnManager.CheckIfTurnComplete(enemyStatSheet, orchestrator);
+
     }
 
     // Begins the move process by activating control actions
@@ -50,7 +83,20 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     // When enemy reaches destination
     private void HandleFinishMoving()
     {
-        characterPhase = ECharacterPhase.IDLE;
+        GameObject enemy = enemyAI.currentEnemy;
+        PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
+
+        enemyStatSheet.movementPoints = 0;
+
+        if (enemyStatSheet.attackPoints > 0)
+        {
+            characterPhase = ECharacterPhase.ATTACK;
+        }
+        else
+        {
+            characterPhase = ECharacterPhase.IDLE;
+        }
+            
         // I could start the attack here
     }
 
