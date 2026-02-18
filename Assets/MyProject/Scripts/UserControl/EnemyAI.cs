@@ -84,6 +84,47 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Continue AI decision-making after a previous action completes
+    /// Called by IUSO_Battle_EnemyTurn_State after movement finishes
+    /// </summary>
+    public void ContinueTurn()
+    {
+        if (!isInitialized)
+        {
+            Debug.LogError("EnemyAI.ContinueTurn() called before initialization!");
+            return;
+        }
+
+        if (currentEnemy == null || currentTarget == null)
+        {
+            Debug.LogWarning("Cannot continue turn - no active enemy or target");
+            return;
+        }
+
+        PlayerStatSheet stats = currentEnemy.GetComponent<PlayerStatSheet>();
+        if (stats == null) return;
+
+        // Check if enemy has any actions left
+        if (stats.attackPoints <= 0 && stats.movementPoints <= 0)
+        {
+            Debug.Log($"{currentEnemy.name} has no actions remaining");
+            stats.turnComplete = true;
+            return;
+        }
+
+        // Re-evaluate position after movement
+        if (IsTargetInAttackRange() && stats.attackPoints > 0)
+        {
+            ExecuteAttack();
+        }
+        else
+        {
+            Debug.Log($"{currentEnemy.name} cannot attack - either out of range or no attack points");
+            stats.turnComplete = true;
+        }
+    }
+
     private void SelectActiveEnemy()
     {
         foreach (GameObject enemy in enemyParty)
@@ -121,6 +162,7 @@ public class EnemyAI : MonoBehaviour
     {
         Debug.Log($"{currentEnemy.name} attacking {currentTarget.name}");
         // TODO: Implement attack
+
     }
 
     private void ExecuteMove()
@@ -135,17 +177,27 @@ public class EnemyAI : MonoBehaviour
 
             PlayerClickControls enemyControls = currentEnemy.GetComponent<PlayerClickControls>();
 
-            Vector2Int fromGridPos = gridManager.WorldToGridPosition(currentEnemy.transform.position);
-            int fromDestinationX = fromGridPos.x;
-            int fromDestinationY = fromGridPos.y;
-            Vector3 fromPosVector = new Vector3(fromDestinationX, 0, fromDestinationY);
-            enemyControls.SetFromPos(fromPosVector);
+            float offset = gridManager.cellSize / 2f;
+            Vector3 offsetVector = new Vector3(offset, 0f, offset);
 
-            Vector2Int destinationGridPos = gridManager.WorldToGridPosition(currentTarget.transform.position);
-            int destinationX = destinationGridPos.x;
-            int destinationY = destinationGridPos.y;
-            Vector3 destinationPosVector = new Vector3(destinationX, 0, destinationY);
-            enemyControls.SetToPos(destinationPosVector);
+            //Vector2Int fromGridPos = gridManager.WorldToGridPosition(currentEnemy.transform.position);
+            //int fromDestinationX = fromGridPos.x;
+            //int fromDestinationY = fromGridPos.y;
+            //Vector3 fromPosVector = new Vector3(fromDestinationX, 0, fromDestinationY);
+            //Vector3 worldPosFromPos = gridManager.GridToWorldPosition(fromGridPos.x, fromGridPos.y);
+            //enemyControls.SetFromPos(worldPosFromPos + offsetVector);
+            //Vector3 newSetFromPos = new Vector3(currentEnemy.transform.position.x, currentEnemy.tr, currentEnemy.transform.position.z);
+            enemyControls.SetFromPos(currentEnemy.transform.position);
+
+            //Vector2Int destinationGridPos = gridManager.WorldToGridPosition(destinationTile.transform.position);
+            //int destinationX = destinationGridPos.x;
+            //int destinationY = destinationGridPos.y;
+            //Vector3 destinationPosVector = new Vector3(destinationX, 0, destinationY);
+            //Vector3 destinationToPos = gridManager.GridToWorldPosition(destinationGridPos.x, destinationGridPos.y);
+            //enemyControls.SetToPos(destinationToPos + offsetVector);
+            float tileHeightOffset = 1.5f;
+            Vector3 newSetToPos = new Vector3(destinationTile.transform.position.x, tileHeightOffset, destinationTile.transform.position.z);
+            enemyControls.SetToPos(newSetToPos);
 
             Vector3 storedFromPos = enemyControls.GetFromPos();
             Vector3 storedToPos = enemyControls.GetToPos();

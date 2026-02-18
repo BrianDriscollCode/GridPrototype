@@ -30,6 +30,7 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         characterPhase = ECharacterPhase.IDLE;
 
         EventManager.MoveEnemy += HandleMoveEnemy;
+        EventManager.MovingComplete += HandleFinishMoving;
 
         Debug.Log("=== ENEMY TURN START ===");
 
@@ -38,15 +39,25 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         enemyAI.ExecuteTurn();
     }
 
+    // Begins the move process by activating control actions
+    // and setting the move characterPhase
     private void HandleMoveEnemy()
     {
         InitializeControlActions();
         characterPhase = ECharacterPhase.MOVE;
     }
 
+    // When enemy reaches destination
+    private void HandleFinishMoving()
+    {
+        characterPhase = ECharacterPhase.IDLE;
+        // I could start the attack here
+    }
+
     public void ExitState()
     {
         EventManager.MoveEnemy -= HandleMoveEnemy;
+        EventManager.MovingComplete -= HandleFinishMoving;
         Debug.Log("=== ENEMY TURN END ===");
     }
 
