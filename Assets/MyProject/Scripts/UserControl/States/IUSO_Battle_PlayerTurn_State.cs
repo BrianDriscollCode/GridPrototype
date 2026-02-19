@@ -39,6 +39,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private TurnManager turnManager;
 
+    private PartyTracker partyTracker;
+
     public void EnterState(UserControlOrchestrator USO)
     {
         allControlActions = new List<MonoBehaviour>();
@@ -69,8 +71,13 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             if (managerObj != null)
             {
                 turnManager = managerObj.GetComponent<TurnManager>();
+                partyTracker = turnManager.GetPartyTracker();
+                partyTracker.SetCurrentParty(PartyTracker.EWhosParty.PLAYER);
             }
+
+            
         }
+
 
         interfaceRaycastSelection = userControlOrchestrator.interfaceRaycastSelection;
         characterPhase = ECharacterPhase.IDLE;
@@ -85,6 +92,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         EventManager.RightClickAttack -= HandleBasicAttack;
         EventManager.FinishBasicMeeleAttack -= HandleFinishBasicAttack;
         EventManager.MovingComplete -= HandleMovingComplete;
+        EventManager.AttackDamageGiven -= HandleAttackDamageGiven;
 
         // Clean up all components
         DestroyComponent(CA_HoverTileSelection);
@@ -108,7 +116,12 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
     public void Update()
     {
         CA_HoverTileSelection.Action();
-        CA_SelectTileWithClick.Action();
+        CA_HoverCharacter.Action();
+        CA_SelectCharacterWithClick.Action();
+        if (!CA_HoverCharacter.isHittingCharacter)
+        {
+            CA_SelectTileWithClick.Action();
+        }
         CA_BasicMeeleAttack.ActionHandler();
     }
 
@@ -126,6 +139,16 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         {
             CA_BasicMeeleAttack.Action();  
         }
+
+        if (input.Player.DebugEditorKey.IsPressed())
+        {
+            gridManager.characterPositionTracker.PrintCharacterPositionList();
+        }
+
+        if (input.Player.Exit.IsPressed())
+        {
+            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+        }
     }
 
     private void InitialiazeControlActions()
@@ -135,20 +158,21 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         activeCharacter = selectedCharacter;
 
         CreateCA(E_CA_Type.HOVER_TILE_SELECTION);
-
-        //CA_HoverCharacter = GO.AddComponent<CA_HoverCharacter>();
-        //CA_HoverCharacter.userControlOrchestrator = userControlOrchestrator;
-
+        CreateCA(E_CA_Type.HOVER_CHARACTER);
         CreateCA(E_CA_Type.MOVE_CHARACTER);
         selectedCharacter.GetComponent<PlayerAnim>().IdleAnimation();
 
         CreateCA(E_CA_Type.SELECT_TILE_WITH_CLICK);
         CreateCA(E_CA_Type.IDLE_CHARACTER);
-
-        //CA_SelectCharacterWithClick = GO.AddComponent<CA_SelectCharacterWithClick>();
-        //CA_SelectCharacterWithClick.userControlOrchestrator = userControlOrchestrator;
-
+        CreateCA(E_CA_Type.SELECT_CHARACTER_WITH_CLICK);
         CreateCA(E_CA_Type.BASIC_MEELE_ATTACK);
+    }
+
+    public void ResetState()
+    {
+        DestroyMultipleControlActions(allControlActions);
+        InitialiazeControlActions();
+
     }
 
     public List<MonoBehaviour> GetAllControlActions()
@@ -227,6 +251,21 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             CA_HoverTileSelection.userControlOrchestrator = userControlOrchestrator;
             CA_HoverTileSelection.interfaceRaycastSelection = interfaceRaycastSelection;
             allControlActions.Add(CA_HoverTileSelection);
+        }
+        else if (type == E_CA_Type.HOVER_CHARACTER)
+        {
+            CA_HoverCharacter = GO.AddComponent<CA_HoverCharacter>();
+            CA_HoverCharacter.userControlOrchestrator = userControlOrchestrator;
+            CA_HoverCharacter.interfaceRaycastSelection = interfaceRaycastSelection;
+            allControlActions.Add(CA_HoverCharacter);
+        }
+        else if (type == E_CA_Type.SELECT_CHARACTER_WITH_CLICK)
+        {
+            CA_SelectCharacterWithClick = GO.AddComponent<CA_SelectCharacterWithClick>();
+            CA_SelectCharacterWithClick.userControlOrchestrator = userControlOrchestrator;
+            CA_SelectCharacterWithClick.interfaceRaycastSelection = interfaceRaycastSelection;
+            CA_SelectCharacterWithClick.input = input;
+            allControlActions.Add(CA_SelectCharacterWithClick);
         }
     }
 
@@ -318,12 +357,15 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         EventManager.RightClickAttack += HandleBasicAttack;
         EventManager.FinishBasicMeeleAttack += HandleFinishBasicAttack;
         EventManager.MovingComplete += HandleMovingComplete;
+        EventManager.AttackDamageGiven += HandleAttackDamageGiven;
     }
 
-    private void HandleTileClicked(Vector2Int gridPos)
+    private void HandleTileClicked(Vector2Int clickedGridPos)
     {
         if (characterPhase != ECharacterPhase.IDLE)
             return;
+
+        //if (clickedGridPos)
 
         List<GameObject> characterList = movementPointsManager.characters;
         GameObject matchingCharacter = characterList.Find(obj => obj == activeCharacter);
@@ -336,7 +378,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             if (playerStatSheet != null)
             {
 
-                int distance = gridManager.GetTileDistance(characterOriginalPos, gridPos);
+                int distance = gridManager.GetTileDistance(characterOriginalPos, clickedGridPos);
 
                 // Validate and execute move
                 if (distance <= playerStatSheet.movementPoints)
@@ -373,7 +415,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         }
     }
 
-    private void HandleFinishBasicAttack()
+    private void HandleAttackDamageGiven()
     {
         Debug.Log("HandleFinishBasicAttack RUNNING!! **************");
         if (characterPhase == ECharacterPhase.ATTACK)
@@ -383,9 +425,38 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
             if (matchingCharacter != null)
             {
+                // temp calculation and handling
                 PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
-                characterPhase = ECharacterPhase.IDLE;
+                GameObject enemy = userControlOrchestrator.target;
+                PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
+                HealthBar enemyHealthBar = enemy.GetComponent<HealthBar>();
 
+
+                int maxEnemyHealth = enemyStatSheet.maxHealth;
+                enemyStatSheet.health -= playerStatSheet.strength;
+                int currentEnemyHealth = enemyStatSheet.health;
+
+                enemyHealthBar.SetHealth(currentEnemyHealth, maxEnemyHealth);
+            }
+        }
+    }
+
+    private void HandleFinishBasicAttack()
+    {
+        Debug.Log("HandleFinishBasicAttack RUNNING!! **************");
+        if (characterPhase == ECharacterPhase.ATTACK)
+        {
+            List<GameObject> characterList = movementPointsManager.characters;
+            GameObject matchingCharacter = characterList.Find(obj => obj == activeCharacter);
+            PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
+
+            if (matchingCharacter != null)
+            {
+
+                characterPhase = ECharacterPhase.IDLE;
+                userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");
+
+                // *** State May Switch
                 turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
             }
         }
@@ -402,6 +473,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         {
             PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
             characterPhase = ECharacterPhase.IDLE;
+
+            // *** State May Switch
             turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
         }
     }

@@ -6,4 +6,9 @@ public class BasicMeeleAttackEvent : MonoBehaviour
     {
         EventManager.OnFinishBasicMeeleAttack();
     }
+
+    public void EmitDamageGivenEvent()
+    {
+        EventManager.OnAttackDamageGiven();
+    }
 }

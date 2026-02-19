@@ -32,7 +32,7 @@ public class CA_HoverTileSelection : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Succes to load hover material! Not error!");
+            Debug.Log("Succes to load hover material! Not error!");
         }
     }
 
@@ -50,7 +50,7 @@ public class CA_HoverTileSelection : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, interfaceRaycastSelection.hoverLayer))
         {
-            Debug.Log("entered");
+            //Debug.Log("entered");
             interfaceRaycastSelection._hoverHit = true;
             interfaceRaycastSelection._hoverHitPoint = hit.point;
             interfaceRaycastSelection._hoverRayLength = hit.distance;
@@ -61,11 +61,12 @@ public class CA_HoverTileSelection : MonoBehaviour
             // Check if we started hovering a new object
             if (interfaceRaycastSelection._currentHoveredObject != hitObject)
             {
-                Debug.Log("entered more");
+                //Debug.Log("entered more");
                 // Exit previous hover
                 if (interfaceRaycastSelection._currentHoveredObject != null)
                 {
                     OnHoverExit(interfaceRaycastSelection._currentHoveredObject, interfaceRaycastSelection._currentHoveredGridPos);
+                    
                 }
 
                 // Enter new hover
@@ -76,7 +77,7 @@ public class CA_HoverTileSelection : MonoBehaviour
         }
         else
         {
-            Debug.Log("elsed");
+            //Debug.Log("elsed");
             interfaceRaycastSelection._hoverHit = false;
             interfaceRaycastSelection._hoverRayLength = 100f;
 
@@ -90,6 +91,22 @@ public class CA_HoverTileSelection : MonoBehaviour
         }
 
 
+    }
+    private void OnDestroy()
+    {
+        // Clean up hover state when component is destroyed
+        ClearHoverState();
+    }
+
+    public void ClearHoverState()
+    {
+        // Exit hover on current object if any
+        if (interfaceRaycastSelection != null && interfaceRaycastSelection._currentHoveredObject != null)
+        {
+            OnHoverExit(interfaceRaycastSelection._currentHoveredObject, interfaceRaycastSelection._currentHoveredGridPos);
+            interfaceRaycastSelection._currentHoveredObject = null;
+            interfaceRaycastSelection._currentHoveredGridPos = new Vector2Int(-1, -1);
+        }
     }
 
     protected virtual void OnHoverEnter(GameObject obj, Vector2Int gridPos)

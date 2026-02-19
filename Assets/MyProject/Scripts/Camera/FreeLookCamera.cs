@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class FreeLookCamera : MonoBehaviour
 {
+    [SerializeField] bool Active;
+
     [Header("Movement")]
     public float moveSpeed = 8f;
     public float fastMultiplier = 2.5f;
@@ -30,11 +32,20 @@ public class FreeLookCamera : MonoBehaviour
 
     void Awake()
     {
+        if (!Active)
+        {
+            return;
+        }
         input = new InputSystem_Actions();
     }
 
     void OnEnable()
     {
+        if (!Active)
+        {
+            return;
+        }
+
         input.Player.Enable();
 
         input.Player.Move.performed += OnMovePerformed;
@@ -62,6 +73,10 @@ public class FreeLookCamera : MonoBehaviour
 
     void OnDisable()
     {
+        if (!Active)
+        {
+            return;
+        }
         input.Player.Move.performed -= OnMovePerformed;
         input.Player.Move.canceled -= OnMoveCanceled;
 
@@ -102,6 +117,10 @@ public class FreeLookCamera : MonoBehaviour
 
     void Update()
     {
+        if (!Active)
+        {
+            return;
+        }
         HandleLook();
         HandleMove();
     }

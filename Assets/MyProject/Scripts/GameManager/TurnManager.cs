@@ -1,12 +1,22 @@
 using UnityEngine;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class TurnManager : MonoBehaviour
 {
     [SerializeField] private AudioClip turnCompleteClip;
     [SerializeField] private AudioSource audioSource;
 
-    private void Start()
+    [SerializeField] private ManagerRegistry managerRegistry;
+    [SerializeField] private CharacterRegisterManager characterRegisterManager;
+    [SerializeField] private PartyTracker partyTracker;
+
+    private async void Start()
     {
+        await InitializeManagersWithRetryAsync();
+        
         // Get or add AudioSource component
         if (audioSource == null)
         {
@@ -18,8 +28,56 @@ public class TurnManager : MonoBehaviour
         }
     }
 
+    private async Task InitializeManagersWithRetryAsync()
+    {
+        int maxAttempts = 10;
+        int attempts = 0;
+        int retryDelayMs = 100; // 100ms between attempts
+
+        while (attempts < maxAttempts)
+        {
+            managerRegistry = GameObject.FindAnyObjectByType<ManagerRegistry>();
+
+            if (managerRegistry != null && managerRegistry.managerList != null && managerRegistry.managerList.Count > 0)
+            {
+                GameObject managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<CharacterRegisterManager>() != null);
+                
+                if (managerObj != null)
+                {
+                    characterRegisterManager = managerObj.GetComponent<CharacterRegisterManager>();
+                    Debug.Log($"TurnManager: CharacterRegisterManager found on attempt {attempts + 1}");
+                    return; // Success!
+                }
+            }
+
+            attempts++;
+            Debug.LogWarning($"TurnManager: Attempt {attempts}/{maxAttempts} - CharacterRegisterManager not found, retrying...");
+            await Task.Delay(retryDelayMs);
+        }
+
+        Debug.LogError("TurnManager: Failed to find CharacterRegisterManager after all retry attempts!");
+    }
+
     public void CheckIfTurnComplete(PlayerStatSheet stats, UserControlOrchestrator userControlOrchestrator)
     {
+        ECharacterType characterType;
+
+        if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.ENEMY)
+        {
+            characterType = ECharacterType.ENEMY;
+            Debug.LogError("CHECKTURNCOMPLETE:: Enemy");
+        }
+        else if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.PLAYER)
+        {
+            characterType = ECharacterType.PLAYER;
+            Debug.LogError("CHECKTURNCOMPLETE:: Player");
+        }
+        else
+        {
+            characterType = ECharacterType.UNKNOWN_CHARACTER_TYPE;
+            Debug.Log("CHECKTURNCOMPLETE:: UNKNOWN");
+        }
+
         if (stats == null)
         {
             Debug.LogWarning("CM_Move: No PlayerStatSheet found");
@@ -29,14 +87,67 @@ public class TurnManager : MonoBehaviour
         // Check if character has any actions left
         if (stats.movementPoints <= 0 && stats.attackPoints <= 0)
         {
-            Debug.Log("CM_Move: Turn complete - switching to enemy turn");
             RunTurnCompleteSound();
-            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+
+            // Switch character here or switch to enemy party
+
+            // Fetches from either player or enemy party depending on character type
+            GameObject nextPartyMember = CheckIfPartyMemberHasPoints(characterType);
+
+            if (nextPartyMember != null && characterType == ECharacterType.PLAYER)
+            {
+                userControlOrchestrator.selectedCharacter = nextPartyMember;
+
+                IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.userControlState as IUSO_Battle_PlayerTurn_State;
+
+                if (battleState != null)
+                {
+                    battleState.ResetState();
+                }
+
+                Debug.Log("CM_Move: Turn complete - switching to next party member");
+            }
+            else if (nextPartyMember != null && characterType == ECharacterType.ENEMY)
+            {
+                userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+            }
+            else
+            {
+                userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+                Debug.Log("CM_Move: Turn complete - switching to next enemy turn");
+            }
+                
         }
         else
         {
             Debug.Log($"CM_Move: Actions remaining - MP: {stats.movementPoints}, AP: {stats.attackPoints}");
         }
+    }
+
+    public GameObject CheckIfPartyMemberHasPoints(ECharacterType characterType)
+    {
+        List<GameObject> partyMembers;
+
+        if (characterType == ECharacterType.ENEMY)
+        {
+            partyMembers = characterRegisterManager.enemyParty;
+        }
+        else
+        {
+            partyMembers = characterRegisterManager.playerParty;
+        }
+
+        foreach (GameObject member in partyMembers)
+        {
+            PlayerStatSheet stats = member.GetComponent<PlayerStatSheet>();
+
+            if (stats.movementPoints > 0 || stats.attackPoints > 0)
+            {
+                return member;
+            }
+        }
+
+        return null;
     }
 
     private void RunTurnCompleteSound()
@@ -45,5 +156,10 @@ public class TurnManager : MonoBehaviour
         {
             audioSource.PlayOneShot(turnCompleteClip);
         }
+    }
+
+    public PartyTracker GetPartyTracker()
+    {
+        return partyTracker;
     }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 public class CharacterStatSheetScriptableObject : ScriptableObject
 {
     // Living Stats
+    public int maxHealth;
     public int health;
 
     // Attribute Stats
@@ -14,7 +15,9 @@ public class CharacterStatSheetScriptableObject : ScriptableObject
     public int charisma;
 
     // action points
+    public int maxMovementPoints;
     public int movementPoints;
+    public int maxAttackPoints;
     public int attackPoints;
 
     // tertiary stats

@@ -12,8 +12,8 @@ public class GameStateManager : MonoBehaviour
 
     private void Start()
     {
-        currentState = Battle;
-        currentState.EnterState();
+        //currentState = Battle;
+        //currentState.EnterState();
     }
 
 }

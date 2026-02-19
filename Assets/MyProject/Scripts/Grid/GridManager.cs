@@ -1,9 +1,14 @@
-using UnityEngine;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
-[ExecuteAlways]
+//[ExecuteAlways]
 public class GridManager : MonoBehaviour
 {
+    public GameObject characterPositionTrackerGO;
+    public CharacterPositionTracker characterPositionTracker;
+    public Dictionary<GameObject, Vector2Int> characterPositionList;
+
     [Header("Level Data")]
     public LevelScriptableObject levelData; // Reference to your scriptable object
     public bool useLevelData = false; // Toggle to use SO data vs manual settings
@@ -14,13 +19,13 @@ public class GridManager : MonoBehaviour
     public bool generate = true;
     public int gridWidth = 10;      // How many cells wide
     public int gridHeight = 10;     // How many cells deep
-    public float cellSize = 4f;     // Each cell is 4x4 units
+    public float cellSize = 2f;     // Each cell is 2x2 units
 
     [Header("Tile Settings")]
     public GameObject tilePrefab;   // Your tile prefab (4x1x4)
 
     // Offset applied to each instantiated prefab (keeps grid point the same)
-    public Vector3 prefabOffset = new Vector3(2f, 0f, 2f);
+    public Vector3 prefabOffset = new Vector3(1f, 0f, 1f);
 
     // 2D array to store what's in each grid cell
     public GameObject[,] gridTiles;
@@ -28,7 +33,24 @@ public class GridManager : MonoBehaviour
 
     void Start()
     {
-        
+        //// Only run in Play mode to avoid issues when stopping the scene
+        //if (!Application.isPlaying) return;
+
+        if (characterPositionTrackerGO == null)
+        {
+            Debug.LogError("CharacterPositionTrackerGO is not assigned in GridManager");
+            return;
+        }
+
+        characterPositionTracker = characterPositionTrackerGO.GetComponent<CharacterPositionTracker>();
+        if (characterPositionTracker == null)
+        {
+            Debug.LogError("CharacterPositionTracker component not found on assigned GameObject");
+            return;
+        }
+
+        characterPositionList = characterPositionTracker.GetCharactersList();
+
         // Use level data dimensions if available
         if (useLevelData && levelData != null)
         {
@@ -41,14 +63,84 @@ public class GridManager : MonoBehaviour
 
         if (generate)
         {
+            // Clear any existing tiles first
+            ClearGrid();
             GenerateGrid();
         }
+        else
+        {
+            // If not generating, populate the array with existing tiles
+            PopulateGridFromExistingTiles();
+        }
+    }
+
+    // Populate the gridTiles array from existing tile GameObjects in the scene
+    // ******** This was purely AI generated with little review besides menu debug
+    // verification of output, needs review. Since prototype, only address
+    // if causes issues.
+    public void PopulateGridFromExistingTiles()
+    {
+        Debug.Log("Populating gridTiles array from existing tiles in scene...");
+
+        // Find all children of this GameObject (assuming tiles are children)
+        Transform[] children = GetComponentsInChildren<Transform>();
+        int foundTiles = 0;
+
+        foreach (Transform child in children)
+        {
+            // Skip self
+            if (child == transform) continue;
+
+            // Try to parse tile name (e.g., "Tile_3_5")
+            if (child.name.StartsWith("Tile_"))
+            {
+                string[] parts = child.name.Split('_');
+                if (parts.Length >= 3)
+                {
+                    if (int.TryParse(parts[1], out int gridX) && int.TryParse(parts[2], out int gridZ))
+                    {
+                        if (IsValidGridPosition(gridX, gridZ))
+                        {
+                            gridTiles[gridX, gridZ] = child.gameObject;
+                            foundTiles++;
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Found tile {child.name} with out-of-bounds position ({gridX}, {gridZ})");
+                        }
+                    }
+                }
+            }
+        }
+
+        Debug.Log($"Populated gridTiles array with {foundTiles} existing tiles");
     }
 
     public bool IsTileAccessible(int col, int row)
     {
         if (levelData == null) return false;
         return levelData.IsAccessible(col, row);
+    }
+
+    // Clear all existing tiles
+    public void ClearGrid()
+    {
+        if (gridTiles != null)
+        {
+            for (int x = 0; x < gridTiles.GetLength(0); x++)
+            {
+                for (int z = 0; z < gridTiles.GetLength(1); z++)
+                {
+                    if (gridTiles[x, z] != null)
+                    {
+                        if (Application.isPlaying)
+                            Destroy(gridTiles[x, z]);
+                        else
+                            DestroyImmediate(gridTiles[x, z]);
+                    }
+                }
+            }
+        }
     }
 
     public void GenerateGrid()
@@ -74,6 +166,8 @@ public class GridManager : MonoBehaviour
     // Generate grid based on LevelScriptableObject data
     void GenerateFromLevelData()
     {
+        Debug.Log($"Generating grid from level data: {levelData.columns}x{levelData.rows}, cellSize: {cellSize}");
+        
         // Option 1: Use rowToCols list (row-column pairs)
         if (levelData.rowToCols != null && levelData.rowToCols.Count > 0)
         {
@@ -112,7 +206,7 @@ public class GridManager : MonoBehaviour
         // Check if coordinates are valid
         if (!IsValidGridPosition(gridX, gridZ))
         {
-            Debug.LogWarning($"Invalid grid position: ({gridX}, {gridZ})");
+            Debug.LogWarning($"Invalid grid position: ({gridX}, {gridZ}) - gridWidth: {gridWidth}, gridHeight: {gridHeight}");
             return;
         }
 
@@ -134,11 +228,14 @@ public class GridManager : MonoBehaviour
         Vector3 worldPos = GridToWorldPosition(gridX, gridZ);
         worldPos.y = height; // Apply height
 
+        Debug.Log($"Placing tile at grid ({gridX}, {gridZ}) -> world pos {worldPos + prefabOffset}");
+
         // Create the tile at the world position plus the prefab offset
         GameObject tile = Instantiate(tilePrefab, worldPos + prefabOffset, Quaternion.identity, transform);
+        tile.name = $"Tile_{gridX}_{gridZ}";
 
         // Store it in the grid
-        gridTiles[gridX, gridZ] = tile;
+        gridTiles[gridX, gridZ] = tile;     
     }
 
     // Remove a tile from the grid
@@ -176,8 +273,17 @@ public class GridManager : MonoBehaviour
     // Check if a tile exists at this grid position
     public bool HasTileAt(int gridX, int gridZ)
     {
-        if (!IsValidGridPosition(gridX, gridZ)) return false;
-        return gridTiles[gridX, gridZ] != null;
+        if (!IsValidGridPosition(gridX, gridZ))
+        {
+            //Debug.LogWarning($"HasTileAt: Invalid position ({gridX}, {gridZ})");
+            return false;
+        }
+
+        GameObject tile = gridTiles[gridX, gridZ];
+        bool result = tile != null;
+
+        //Debug.Log($"HasTileAt({gridX}, {gridZ}): tile={tile?.name ?? "null"}, result={result}");
+        return result;
     }
 
     public GameObject GetTile(int gridX, int gridZ)
@@ -194,6 +300,21 @@ public class GridManager : MonoBehaviour
         int dy = Math.Abs(pos2.y - pos1.y);
 
         return Math.Max(dx, dy);
+    }
+
+    public bool IsGridPosOccupied(Vector2Int gridPos)
+    {
+        if (characterPositionTracker == null) return false;
+        
+        foreach (Vector2Int pos in characterPositionTracker.GetCharactersList().Values)
+        {
+            bool xMatch = gridPos.x == pos.x;
+            bool yMatch = gridPos.y == pos.y;
+
+            if (xMatch && yMatch) return true;
+        }
+
+        return false;
     }
 
     // Visualize the grid in the editor

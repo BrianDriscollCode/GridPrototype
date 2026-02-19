@@ -6,6 +6,8 @@ using System.Linq;
 public class CharacterRegisterManager : MonoBehaviour
 {
     public List<GameObject> characters;
+    public List<GameObject> playerParty;
+    public List<GameObject> enemyParty;
 
     private void Start()
     {
@@ -13,7 +15,19 @@ public class CharacterRegisterManager : MonoBehaviour
     
         foreach (GameObject c in characters)
         {
-            Debug.Log("Character has entered the arena: " + c);
+            PartyTag partyTagGO = c.GetComponent<PartyTag>();
+
+            if (partyTagGO.partyTag == null) return;
+
+            if (partyTagGO.partyTag == PartyTag.CharacterPartyTag.PLAYER)
+            {
+                playerParty.Add(c);
+            }
+
+            if (partyTagGO.partyTag == PartyTag.CharacterPartyTag.ENEMY)
+            {
+                enemyParty.Add(c);
+            }
         }
     }
 

@@ -38,4 +38,20 @@ public static class EventManager
     {
         MovingComplete?.Invoke();
     }
+
+    public static event UnityAction AttackDamageGiven;
+
+    public static void OnAttackDamageGiven()
+    {
+        AttackDamageGiven?.Invoke();
+    }
+
+    public static event UnityAction MoveEnemy;
+
+    public static void OnMoveEnemy()
+    {
+        MoveEnemy?.Invoke();
+    }
+
+    
 }

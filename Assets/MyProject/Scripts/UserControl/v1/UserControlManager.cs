@@ -98,7 +98,7 @@ public class UserControlManager : MonoBehaviour
         CA_IdleCharacter.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
 
         CA_SelectCharacterWithClick = gameObject.AddComponent<CA_SelectCharacterWithClick>();
-        CA_SelectCharacterWithClick.userControlManager = this;
+        //CA_SelectCharacterWithClick.userControlOrchestrator = this;
 
         if (camera == null)
             camera = Camera.main;
