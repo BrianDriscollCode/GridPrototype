@@ -39,6 +39,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private TurnManager turnManager;
 
+    private PartyTracker partyTracker;
+
     public void EnterState(UserControlOrchestrator USO)
     {
         allControlActions = new List<MonoBehaviour>();
@@ -69,8 +71,13 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             if (managerObj != null)
             {
                 turnManager = managerObj.GetComponent<TurnManager>();
+                partyTracker = turnManager.GetPartyTracker();
+                partyTracker.SetCurrentParty(PartyTracker.EWhosParty.PLAYER);
             }
+
+            
         }
+
 
         interfaceRaycastSelection = userControlOrchestrator.interfaceRaycastSelection;
         characterPhase = ECharacterPhase.IDLE;
@@ -425,7 +432,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
                 HealthBar enemyHealthBar = enemy.GetComponent<HealthBar>();
 
 
-                int maxEnemyHealth = 10;
+                int maxEnemyHealth = enemyStatSheet.maxHealth;
                 enemyStatSheet.health -= playerStatSheet.strength;
                 int currentEnemyHealth = enemyStatSheet.health;
 

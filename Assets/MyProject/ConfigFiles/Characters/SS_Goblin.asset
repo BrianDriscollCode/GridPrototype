@@ -12,12 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23c4a7bbe3f33ee409b0512f6735cf1d, type: 3}
   m_Name: SS_Goblin
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStatSheetScriptableObject
+  maxHealth: 5
   health: 5
   strength: 5
   intellect: 3
   dexterity: 8
   wisdom: 2
   charisma: 3
+  maxMovementPoints: 5
   movementPoints: 5
+  maxAttackPoints: 1
   attackPoints: 1
   fightingSpirit: 5

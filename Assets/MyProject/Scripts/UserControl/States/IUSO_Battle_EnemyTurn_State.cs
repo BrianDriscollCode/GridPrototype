@@ -20,7 +20,7 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
 
     private InputSystem_Actions input;
     private TurnManager turnManager;
-
+    private PartyTracker partyTracker;
     public void EnterState(UserControlOrchestrator UCO)
     {
         allControlActions = new List<MonoBehaviour>();
@@ -28,6 +28,8 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         enemyAI = UCO.enemyAI;  // Get AI from orchestrator
         gridManager = UCO.gridManager;
         turnManager = GameObject.FindFirstObjectByType<TurnManager>();
+        partyTracker = turnManager.GetPartyTracker();
+        partyTracker.SetCurrentParty(PartyTracker.EWhosParty.ENEMY);
 
         characterPhase = ECharacterPhase.IDLE;
 
@@ -53,7 +55,8 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         HealthBar playerHealthBar = player.GetComponent<HealthBar>();
 
         playerStatSheet.health -= enemyStatSheet.strength;
-        playerHealthBar.SetHealth(playerStatSheet.health, 10);
+        playerHealthBar.SetHealth(playerStatSheet.health, playerStatSheet.maxHealth);
+
     }
 
     private void HandleFinishAttack()

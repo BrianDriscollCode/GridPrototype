@@ -11,6 +11,7 @@ public class TurnManager : MonoBehaviour
 
     [SerializeField] private ManagerRegistry managerRegistry;
     [SerializeField] private CharacterRegisterManager characterRegisterManager;
+    [SerializeField] private PartyTracker partyTracker;
 
     private async void Start()
     {
@@ -59,6 +60,24 @@ public class TurnManager : MonoBehaviour
 
     public void CheckIfTurnComplete(PlayerStatSheet stats, UserControlOrchestrator userControlOrchestrator)
     {
+        ECharacterType characterType;
+
+        if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.ENEMY)
+        {
+            characterType = ECharacterType.ENEMY;
+            Debug.LogError("CHECKTURNCOMPLETE:: Enemy");
+        }
+        else if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.PLAYER)
+        {
+            characterType = ECharacterType.PLAYER;
+            Debug.LogError("CHECKTURNCOMPLETE:: Player");
+        }
+        else
+        {
+            characterType = ECharacterType.UNKNOWN_CHARACTER_TYPE;
+            Debug.Log("CHECKTURNCOMPLETE:: UNKNOWN");
+        }
+
         if (stats == null)
         {
             Debug.LogWarning("CM_Move: No PlayerStatSheet found");
@@ -72,9 +91,10 @@ public class TurnManager : MonoBehaviour
 
             // Switch character here or switch to enemy party
 
-            GameObject nextPartyMember = CheckIfPartyMemberHasPoints();
+            // Fetches from either player or enemy party depending on character type
+            GameObject nextPartyMember = CheckIfPartyMemberHasPoints(characterType);
 
-            if (nextPartyMember != null)
+            if (nextPartyMember != null && characterType == ECharacterType.PLAYER)
             {
                 userControlOrchestrator.selectedCharacter = nextPartyMember;
 
@@ -86,6 +106,10 @@ public class TurnManager : MonoBehaviour
                 }
 
                 Debug.Log("CM_Move: Turn complete - switching to next party member");
+            }
+            else if (nextPartyMember != null && characterType == ECharacterType.ENEMY)
+            {
+                userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
             }
             else
             {
@@ -100,9 +124,18 @@ public class TurnManager : MonoBehaviour
         }
     }
 
-    public GameObject CheckIfPartyMemberHasPoints()
+    public GameObject CheckIfPartyMemberHasPoints(ECharacterType characterType)
     {
-        List<GameObject> partyMembers = characterRegisterManager.playerParty;
+        List<GameObject> partyMembers;
+
+        if (characterType == ECharacterType.ENEMY)
+        {
+            partyMembers = characterRegisterManager.enemyParty;
+        }
+        else
+        {
+            partyMembers = characterRegisterManager.playerParty;
+        }
 
         foreach (GameObject member in partyMembers)
         {
@@ -123,5 +156,10 @@ public class TurnManager : MonoBehaviour
         {
             audioSource.PlayOneShot(turnCompleteClip);
         }
+    }
+
+    public PartyTracker GetPartyTracker()
+    {
+        return partyTracker;
     }
 }
