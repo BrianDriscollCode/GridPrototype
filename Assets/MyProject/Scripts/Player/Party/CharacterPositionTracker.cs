@@ -38,7 +38,7 @@ public class CharacterPositionTracker : MonoBehaviour
     {
         foreach (KeyValuePair<GameObject, Vector2Int> kvp in characterPositionList)
         {
-            Debug.Log($"{kvp.Key.name}: {kvp.Value}");
+            //Debug.Log$"{kvp.Key.name}: {kvp.Value}");
         }
     }
 

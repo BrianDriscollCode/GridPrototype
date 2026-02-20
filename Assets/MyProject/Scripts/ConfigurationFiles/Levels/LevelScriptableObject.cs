@@ -97,7 +97,7 @@ public class LevelScriptableObject : ScriptableObject
             }
         }
 
-        Debug.Log($"Built grid from rowToCols: {tiles.Count} tiles populated");
+        //Debug.Log$"Built grid from rowToCols: {tiles.Count} tiles populated");
     }
 
     public TileData GetTile(int col, int row)

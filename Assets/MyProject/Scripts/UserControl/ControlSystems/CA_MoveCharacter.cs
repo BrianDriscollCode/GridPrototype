@@ -48,19 +48,19 @@ public class CA_MoveCharacter : MonoBehaviour
 
         // Execute movement
         cm_move.Move();
-        //Debug.Log("cm_move.IsComplete = " + cm_move.IsComplete);
+        ////Debug.Log"cm_move.IsComplete = " + cm_move.IsComplete);
 
         // Handle completion (orchestration logic stays here)
         if (cm_move.IsComplete)
         {
-            Debug.Log("Movement complete - calling handling");
+            //Debug.Log"Movement complete - calling handling");
             OnMoveComplete();
         }
     }
 
     private void OnMoveComplete()
     {
-        Debug.Log("Movement complete - handling orchestration");
+        //Debug.Log"Movement complete - handling orchestration");
 
         // Reset movement state
         cm_move.Reset();

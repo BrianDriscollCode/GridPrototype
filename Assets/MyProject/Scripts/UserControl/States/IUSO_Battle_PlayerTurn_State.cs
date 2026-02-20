@@ -417,7 +417,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private void HandleAttackDamageGiven()
     {
-        Debug.Log("HandleFinishBasicAttack RUNNING!! **************");
+        //Debug.Log"HandleFinishBasicAttack RUNNING!! **************");
         if (characterPhase == ECharacterPhase.ATTACK)
         {
             List<GameObject> characterList = movementPointsManager.characters;
@@ -443,7 +443,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private void HandleFinishBasicAttack()
     {
-        Debug.Log("HandleFinishBasicAttack RUNNING!! **************");
+        //Debug.Log"HandleFinishBasicAttack RUNNING!! **************");
         if (characterPhase == ECharacterPhase.ATTACK)
         {
             List<GameObject> characterList = movementPointsManager.characters;
@@ -464,7 +464,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private void HandleMovingComplete()
     {
-        Debug.Log("HandleMovingcomplete RUNNING!! **************");
+        //Debug.Log"HandleMovingcomplete RUNNING!! **************");
 
         List<GameObject> characterList = movementPointsManager.characters;
         GameObject matchingCharacter = characterList.Find(obj => obj == activeCharacter);

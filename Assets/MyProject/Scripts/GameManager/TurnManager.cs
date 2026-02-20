@@ -45,7 +45,7 @@ public class TurnManager : MonoBehaviour
                 if (managerObj != null)
                 {
                     characterRegisterManager = managerObj.GetComponent<CharacterRegisterManager>();
-                    Debug.Log($"TurnManager: CharacterRegisterManager found on attempt {attempts + 1}");
+                    //Debug.Log$"TurnManager: CharacterRegisterManager found on attempt {attempts + 1}");
                     return; // Success!
                 }
             }
@@ -60,22 +60,24 @@ public class TurnManager : MonoBehaviour
 
     public void CheckIfTurnComplete(PlayerStatSheet stats, UserControlOrchestrator userControlOrchestrator)
     {
+        Logger.LogCategory("Turn", "CheckIfTurnComplete");
+
         ECharacterType characterType;
 
         if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.ENEMY)
         {
             characterType = ECharacterType.ENEMY;
-            Debug.LogError("CHECKTURNCOMPLETE:: Enemy");
+            //Debug.LogError("CHECKTURNCOMPLETE:: Enemy");
         }
         else if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.PLAYER)
         {
             characterType = ECharacterType.PLAYER;
-            Debug.LogError("CHECKTURNCOMPLETE:: Player");
+            //Debug.LogError("CHECKTURNCOMPLETE:: Player");
         }
         else
         {
             characterType = ECharacterType.UNKNOWN_CHARACTER_TYPE;
-            Debug.Log("CHECKTURNCOMPLETE:: UNKNOWN");
+            //Debug.Log"CHECKTURNCOMPLETE:: UNKNOWN");
         }
 
         if (stats == null)
@@ -105,22 +107,63 @@ public class TurnManager : MonoBehaviour
                     battleState.ResetState();
                 }
 
-                Debug.Log("CM_Move: Turn complete - switching to next party member");
+                //Debug.Log"CM_Move: Turn complete - switching to next party member");
             }
             else if (nextPartyMember != null && characterType == ECharacterType.ENEMY)
             {
                 userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
             }
+            else if (nextPartyMember == null && characterType == ECharacterType.PLAYER)
+            {
+                RestorePartyAttackAndMovementPoints(characterType);
+                userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+            }
+            else if (nextPartyMember == null && characterType == ECharacterType.ENEMY)
+            {
+                RestorePartyAttackAndMovementPoints(characterType);
+                nextPartyMember = CheckIfPartyMemberHasPoints(ECharacterType.PLAYER);
+                userControlOrchestrator.selectedCharacter = nextPartyMember;
+                userControlOrchestrator.SwitchState(userControlOrchestrator.battle_PlayerTurn_State);
+
+                IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.userControlState as IUSO_Battle_PlayerTurn_State;
+
+                if (battleState != null)
+                {
+                    battleState.ResetState();
+                }
+                else
+                {
+                    userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+                    //Debug.Log"CM_Move: Turn complete - switching to next enemy turn");
+                }
+
+            }
             else
             {
-                userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
-                Debug.Log("CM_Move: Turn complete - switching to next enemy turn");
+                //Debug.Log$"CM_Move: Actions remaining - MP: {stats.movementPoints}, AP: {stats.attackPoints}");
             }
-                
+        }
+    }
+
+    public void RestorePartyAttackAndMovementPoints(ECharacterType characterType)
+    {
+        List<GameObject> partyMembers;
+
+        if (characterType == ECharacterType.ENEMY)
+        {
+            partyMembers = characterRegisterManager.enemyParty;
         }
         else
         {
-            Debug.Log($"CM_Move: Actions remaining - MP: {stats.movementPoints}, AP: {stats.attackPoints}");
+            partyMembers = characterRegisterManager.playerParty;
+        }
+
+        foreach (GameObject member in partyMembers)
+        {
+            PlayerStatSheet stats = member.GetComponent<PlayerStatSheet>();
+
+            stats.attackPoints = stats.maxAttackPoints;
+            stats.movementPoints = stats.maxMovementPoints;
         }
     }
 

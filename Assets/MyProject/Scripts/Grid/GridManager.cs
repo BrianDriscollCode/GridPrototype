@@ -38,14 +38,14 @@ public class GridManager : MonoBehaviour
 
         if (characterPositionTrackerGO == null)
         {
-            Debug.LogError("CharacterPositionTrackerGO is not assigned in GridManager");
+            //Debug.LogError("CharacterPositionTrackerGO is not assigned in GridManager");
             return;
         }
 
         characterPositionTracker = characterPositionTrackerGO.GetComponent<CharacterPositionTracker>();
         if (characterPositionTracker == null)
         {
-            Debug.LogError("CharacterPositionTracker component not found on assigned GameObject");
+            //Debug.LogError("CharacterPositionTracker component not found on assigned GameObject");
             return;
         }
 
@@ -80,7 +80,7 @@ public class GridManager : MonoBehaviour
     // if causes issues.
     public void PopulateGridFromExistingTiles()
     {
-        Debug.Log("Populating gridTiles array from existing tiles in scene...");
+        //Debug.Log"Populating gridTiles array from existing tiles in scene...");
 
         // Find all children of this GameObject (assuming tiles are children)
         Transform[] children = GetComponentsInChildren<Transform>();
@@ -113,7 +113,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        Debug.Log($"Populated gridTiles array with {foundTiles} existing tiles");
+        //Debug.Log$"Populated gridTiles array with {foundTiles} existing tiles");
     }
 
     public bool IsTileAccessible(int col, int row)
@@ -166,7 +166,7 @@ public class GridManager : MonoBehaviour
     // Generate grid based on LevelScriptableObject data
     void GenerateFromLevelData()
     {
-        Debug.Log($"Generating grid from level data: {levelData.columns}x{levelData.rows}, cellSize: {cellSize}");
+        //Debug.Log$"Generating grid from level data: {levelData.columns}x{levelData.rows}, cellSize: {cellSize}");
         
         // Option 1: Use rowToCols list (row-column pairs)
         if (levelData.rowToCols != null && levelData.rowToCols.Count > 0)
@@ -213,7 +213,7 @@ public class GridManager : MonoBehaviour
         // If there's already a tile here, don't place another
         if (gridTiles[gridX, gridZ] != null)
         {
-            Debug.Log($"Tile already exists at ({gridX}, {gridZ})");
+            //Debug.Log$"Tile already exists at ({gridX}, {gridZ})");
             return;
         }
 
@@ -228,7 +228,7 @@ public class GridManager : MonoBehaviour
         Vector3 worldPos = GridToWorldPosition(gridX, gridZ);
         worldPos.y = height; // Apply height
 
-        Debug.Log($"Placing tile at grid ({gridX}, {gridZ}) -> world pos {worldPos + prefabOffset}");
+        //Debug.Log$"Placing tile at grid ({gridX}, {gridZ}) -> world pos {worldPos + prefabOffset}");
 
         // Create the tile at the world position plus the prefab offset
         GameObject tile = Instantiate(tilePrefab, worldPos + prefabOffset, Quaternion.identity, transform);
@@ -282,7 +282,7 @@ public class GridManager : MonoBehaviour
         GameObject tile = gridTiles[gridX, gridZ];
         bool result = tile != null;
 
-        //Debug.Log($"HasTileAt({gridX}, {gridZ}): tile={tile?.name ?? "null"}, result={result}");
+        ////Debug.Log$"HasTileAt({gridX}, {gridZ}): tile={tile?.name ?? "null"}, result={result}");
         return result;
     }
 

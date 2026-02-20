@@ -38,8 +38,9 @@ public class UserControlOrchestrator : MonoBehaviour
     {
         InitializeManagers();
         InitializeRaycastSystem();
-        InitializeAI();
         InitializeStates();
+        InitializeAI();
+        
         
         // Start first turn
         SwitchState(battle_PlayerTurn_State);
@@ -84,7 +85,8 @@ public class UserControlOrchestrator : MonoBehaviour
         enemyAI.Initialize(
             gridManager,
             movementPointsManager,
-            characterRegisterManager
+            characterRegisterManager,
+            battle_EnemyTurn_State as IUSO_Battle_EnemyTurn_State
         );
     }
 

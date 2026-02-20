@@ -156,10 +156,10 @@ public class Player : MonoBehaviour
         //if (playerAnimator != null)
         //{
         //    playerAnimator.SetBool(isRunningHash, moving);
-        //    Debug.Log("isRunningHash :" + moving);
+        //    //Debug.Log"isRunningHash :" + moving);
         //    playerAnimator.SetBool(isIdleHash, !moving);
-        //    Debug.Log("isIdleHash :" + moving);
-        //    Debug.Log("Player Animator has set states.");
+        //    //Debug.Log"isIdleHash :" + moving);
+        //    //Debug.Log"Player Animator has set states.");
         //}
 
         // --- Face running direction (isometric-aware) ---

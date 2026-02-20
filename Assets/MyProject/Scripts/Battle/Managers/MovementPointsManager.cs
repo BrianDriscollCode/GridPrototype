@@ -42,13 +42,13 @@ public class MovementPointsManager : MonoBehaviour
     private void OnEnable()
     {
         EventManager.ClickedTile += HandleTileClicked;
-        //Debug.Log("Listener: subscribed to ClickedTile");
+        ////Debug.Log"Listener: subscribed to ClickedTile");
     }
 
     private void OnDisable()
     {
         EventManager.ClickedTile -= HandleTileClicked;
-        //Debug.Log("Listener: unsubscribed from ClickedTile");
+        ////Debug.Log"Listener: unsubscribed from ClickedTile");
     }
 
     public void HandleTileClicked(Vector2Int gridPos)
@@ -72,7 +72,7 @@ public class MovementPointsManager : MonoBehaviour
 
         int distance = Mathf.Max(deltaX, deltaY);
 
-        Debug.Log($"Movement from ({currentLocation.x},{currentLocation.y}) to ({destinationLocation.x},{destinationLocation.y}) = {distance} tiles (with diagonals)");
+        //Debug.Log$"Movement from ({currentLocation.x},{currentLocation.y}) to ({destinationLocation.x},{destinationLocation.y}) = {distance} tiles (with diagonals)");
 
         return distance;
     }

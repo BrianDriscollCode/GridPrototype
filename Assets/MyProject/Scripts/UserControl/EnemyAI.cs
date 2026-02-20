@@ -8,6 +8,7 @@ using UnityEngine;
 public class EnemyAI : MonoBehaviour
 {
     // Dependencies injected by orchestrator
+    private IUSO_Battle_EnemyTurn_State state;
     private GridManager gridManager;
     private MovementPointsManager movementPointsManager;
     private CharacterRegisterManager characterRegisterManager;
@@ -15,12 +16,12 @@ public class EnemyAI : MonoBehaviour
     private List<GameObject> playerParty;
     private List<GameObject> enemyParty;
 
-    // AI-specific state
-    public GameObject currentEnemy { get; private set; }
-    public GameObject currentTarget { get; private set; }
-
     private int attackDistance = 1;
     private bool isInitialized = false;
+
+    // AI-specific public accessible state
+    public GameObject currentEnemy { get; private set; }
+    public GameObject currentTarget { get; private set; }
 
     /// <summary>
     /// Called by UserControlOrchestrator to inject dependencies
@@ -28,11 +29,13 @@ public class EnemyAI : MonoBehaviour
     public void Initialize(
         GridManager grid,
         MovementPointsManager movePoints,
-        CharacterRegisterManager charRegister)
+        CharacterRegisterManager charRegister,
+        IUSO_Battle_EnemyTurn_State battleState)
     {
         gridManager = grid;
         movementPointsManager = movePoints;
         characterRegisterManager = charRegister;
+        state = battleState;
 
         if (characterRegisterManager != null)
         {
@@ -41,7 +44,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         isInitialized = true;
-        Debug.Log("EnemyAI initialized successfully");
+        //Debug.Log"EnemyAI initialized successfully");
     }
 
     /// <summary>
@@ -71,7 +74,7 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        Debug.Log($"Enemy Turn: {currentEnemy.name} {currentTarget.name}");
+        //Debug.Log$"Enemy Turn: {currentEnemy.name} {currentTarget.name}");
 
         // Decide and execute action
         if (IsTargetInAttackRange())
@@ -88,44 +91,44 @@ public class EnemyAI : MonoBehaviour
     /// Continue AI decision-making after a previous action completes
     /// Called by IUSO_Battle_EnemyTurn_State after movement finishes
     /// </summary>
-    public void ContinueTurn()
-    {
-        if (!isInitialized)
-        {
-            Debug.LogError("EnemyAI.ContinueTurn() called before initialization!");
-            return;
-        }
+    //public void ContinueTurn()
+    //{
+    //    if (!isInitialized)
+    //    {
+    //        Debug.LogError("EnemyAI.ContinueTurn() called before initialization!");
+    //        return;
+    //    }
 
-        if (currentEnemy == null || currentTarget == null)
-        {
-            Debug.LogWarning("Cannot continue turn - no active enemy or target");
-            return;
-        }
+    //    if (currentEnemy == null || currentTarget == null)
+    //    {
+    //        Debug.LogWarning("Cannot continue turn - no active enemy or target");
+    //        return;
+    //    }
 
-        PlayerStatSheet stats = currentEnemy.GetComponent<PlayerStatSheet>();
-        if (stats == null) return;
+    //    PlayerStatSheet stats = currentEnemy.GetComponent<PlayerStatSheet>();
+    //    if (stats == null) return;
 
-        // Check if enemy has any actions left
-        if (stats.attackPoints <= 0 && stats.movementPoints <= 0)
-        {
-            Debug.Log($"{currentEnemy.name} has no actions remaining");
-            stats.turnComplete = true;
-            return;
-        }
+    //    // Check if enemy has any actions left
+    //    if (stats.attackPoints <= 0 && stats.movementPoints <= 0)
+    //    {
+    //        //Debug.Log$"{currentEnemy.name} has no actions remaining");
+    //        stats.turnComplete = true;
+    //        return;
+    //    }
 
-        // Re-evaluate position after movement
-        if (IsTargetInAttackRange() && stats.attackPoints > 0)
-        {
-            ExecuteAttack();
-        }
-        else
-        {
-            Debug.Log($"{currentEnemy.name} cannot attack - either out of range or no attack points");
-            stats.turnComplete = true;
-        }
-    }
+    //    // Re-evaluate position after movement
+    //    if (IsTargetInAttackRange() && stats.attackPoints > 0)
+    //    {
+    //        ExecuteAttack();
+    //    }
+    //    else
+    //    {
+    //        //Debug.Log$"{currentEnemy.name} cannot attack - either out of range or no attack points");
+    //        stats.turnComplete = true;
+    //    }
+    //}
 
-    private void SelectActiveEnemy()
+    public void SelectActiveEnemy()
     {
         foreach (GameObject enemy in enemyParty)
         {
@@ -135,7 +138,7 @@ public class EnemyAI : MonoBehaviour
             if ((stats.attackPoints > 0 || stats.movementPoints > 0) && !stats.turnComplete)
             {
                 currentEnemy = enemy;
-                Debug.Log($"Selected enemy: {currentEnemy.name}");
+                //Debug.Log$"Selected enemy: {currentEnemy.name}");
                 return;
             }
         }
@@ -160,19 +163,20 @@ public class EnemyAI : MonoBehaviour
 
     private void ExecuteAttack()
     {
-        Debug.Log($"{currentEnemy.name} attacking {currentTarget.name}");
+        //Debug.Log$"{currentEnemy.name} attacking {currentTarget.name}");
         // TODO: Implement attack
 
+        state.characterPhase = ECharacterPhase.ATTACK;
     }
 
     private void ExecuteMove()
     {
-        Debug.Log($"{currentEnemy.name} moving towards {currentTarget.name}");
+        //Debug.Log$"{currentEnemy.name} moving towards {currentTarget.name}");
         GameObject destinationTile = ChooseBestMoveTile();
 
         if (destinationTile != null)
         {
-            Debug.Log($"Moving to: {destinationTile.name}");
+            //Debug.Log$"Moving to: {destinationTile.name}");
             // TODO: Execute movement
 
             PlayerClickControls enemyControls = currentEnemy.GetComponent<PlayerClickControls>();
@@ -208,7 +212,7 @@ public class EnemyAI : MonoBehaviour
             }
             else
             {
-                Debug.Log("one or more stored positions are null");
+                //Debug.Log"one or more stored positions are null");
             }
         }
     }
