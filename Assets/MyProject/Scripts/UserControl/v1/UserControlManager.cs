@@ -46,13 +46,13 @@ public class UserControlManager : MonoBehaviour
     private void OnEnable()
     {
         EventManager.ClickedTile += HandleTileClicked;
-        //Debug.Log("Listener: subscribed to ClickedTile");
+        ////Debug.Log"Listener: subscribed to ClickedTile");
     }
 
     private void OnDisable()
     {
         EventManager.ClickedTile -= HandleTileClicked;
-        //Debug.Log("Listener: unsubscribed from ClickedTile");
+        ////Debug.Log"Listener: unsubscribed from ClickedTile");
     }
 
     private void HandleTileClicked(Vector2Int gridPos)

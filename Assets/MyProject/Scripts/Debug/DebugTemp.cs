@@ -34,9 +34,9 @@ public class DebugTemp : MonoBehaviour
     void HandleClick()
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        //Debug.Log("mousePos: " + mousePos);
+        ////Debug.Log"mousePos: " + mousePos);
         Ray ray = camera.ScreenPointToRay(mousePos);
-        //Debug.Log(ray);
+        ////Debug.Logray);
 
         // store ray so Gizmos can draw it
         _lastRay = ray;
@@ -44,7 +44,7 @@ public class DebugTemp : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, tileLayer))
         {
-            //Debug.Log("hit");
+            ////Debug.Log"hit");
             _lastRayHit = true;
             _lastHitPoint = hit.point;
 
@@ -54,16 +54,16 @@ public class DebugTemp : MonoBehaviour
 
             // ****Refactor work - .y and .z being the same can get confusing because of the
             //                     Vector2Int data type
-            //Debug.Log($"Hit Point: " + hit.point);
+            ////Debug.Log$"Hit Point: " + hit.point);
             Vector2Int gridPos = gridSystem.WorldToGridPosition(hit.point);
-            //Debug.Log($"Clicked grid position: ({gridPos.x}, {gridPos.y})");
+            ////Debug.Log$"Clicked grid position: ({gridPos.x}, {gridPos.y})");
 
-           // Debug.Log("HasTileAt: " + gridSystem.HasTileAt(gridPos.x, gridPos.y));
+           // //Debug.Log"HasTileAt: " + gridSystem.HasTileAt(gridPos.x, gridPos.y));
 
         }
         else
         {
-            //Debug.Log("No hit");
+            ////Debug.Log"No hit");
             _lastRayHit = false;
 
             // draw a long ray if no hit

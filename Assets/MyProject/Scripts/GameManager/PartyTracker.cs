@@ -23,6 +23,6 @@ public class PartyTracker : MonoBehaviour
     public void SetCurrentParty(EWhosParty party)
     {
         currentParty = party;
-        Debug.Log($"PartyTracker: Current party set to {party}");
+        //Debug.Log$"PartyTracker: Current party set to {party}");
     }
 }

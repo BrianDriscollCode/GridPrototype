@@ -54,7 +54,7 @@ public class CA_HoverCharacter : MonoBehaviour
         { 
             isHittingCharacter = true;
             //userControlManager.hoveredCharacter = hit.collider.gameObject;
-            Debug.Log("Hitting a character!!");
+            //Debug.Log"Hitting a character!!");
         }
         else
         {
@@ -104,7 +104,7 @@ public class CA_HoverCharacter : MonoBehaviour
 
     protected virtual void OnHoverEnter(GameObject obj, Vector2Int gridPos)
     {
-        //Debug.Log($"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
+        ////Debug.Log$"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 
 
         //var renderer = obj.GetComponent<Renderer>();
@@ -130,7 +130,7 @@ public class CA_HoverCharacter : MonoBehaviour
 
     protected virtual void OnHoverExit(GameObject obj, Vector2Int gridPos)
     {
-        //Debug.Log($"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
+        ////Debug.Log$"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 
         //var renderer = obj.GetComponent<Renderer>();
         //if (renderer != null && _originalMaterials.ContainsKey(obj))

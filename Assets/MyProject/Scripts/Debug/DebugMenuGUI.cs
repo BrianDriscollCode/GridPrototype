@@ -40,39 +40,39 @@ public class DebugMenuGUI : MonoBehaviour
         GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight),
             userControlOrchestrator.stateString != null ? stateString : "None"))
-            Debug.Log("State String");
+            //Debug.Log"State String");
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "CharacterPhase:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight),
             userControlOrchestrator.userControlState.GetStateInfo() != null ? characterPhaseString : "None"))
-            Debug.Log("Current State clicked");
+            //Debug.Log"Current State clicked");
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "chracter Pos:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight),
             userControlOrchestrator.selectedCharacter != null ? userControlOrchestrator.selectedCharacter.transform.position.ToString() : "no character selected"))
-            Debug.Log("Selected Character clicked");
+            //Debug.Log"Selected Character clicked");
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Hovered Character:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight),
             userControlOrchestrator.selectedCharacter != null ? gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.transform.position).ToString() : "None"))
-            Debug.Log("Hovered Character clicked");
+            //Debug.Log"Hovered Character clicked");
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 4, labelWidth, rowHeight), "Turn: ");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 4, valueWidth, rowHeight),
             userControlOrchestrator.selectedCharacter != null ? gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.transform.position).ToString() : "None"))
-            Debug.Log("Hovered Character clicked");
+            //Debug.Log"Hovered Character clicked");
 
         // Row 6: Target
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 5, labelWidth, rowHeight), "Target:");
         string targetInfo = GetTargetInfo();
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 5, valueWidth, rowHeight), targetInfo))
-            Debug.Log("Target Info: " + targetInfo);
+            //Debug.Log"Target Info: " + targetInfo);
 
         // Row 7: Selected Character Info
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 6, labelWidth, rowHeight), "Selected Character:");
         string selectedCharInfo = GetSelectedCharacterInfo();
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 6, valueWidth, rowHeight), selectedCharInfo))
-            Debug.Log("Selected Character Info: " + selectedCharInfo);
+            //Debug.Log"Selected Character Info: " + selectedCharInfo);
 
         // Row 8+: All Control Actions (multiple rows)
         DrawControlActionsList(leftMargin, startY + rowHeight * 7, labelWidth, valueWidth, rowHeight);
@@ -126,7 +126,9 @@ public class DebugMenuGUI : MonoBehaviour
                 float yPos = startY + (i * rowHeight);
 
                 if (GUI.Button(new Rect(leftMargin + labelWidth, yPos, valueWidth, rowHeight), actionName))
-                    Debug.Log($"Control Action [{i}]: {actionName}");
+                {
+                    //Debug.Log$"Control Action [{i}]: {actionName}");
+                }
             }
         }
         else

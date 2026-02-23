@@ -48,23 +48,22 @@ public class CA_MoveCharacter : MonoBehaviour
 
         // Execute movement
         cm_move.Move();
-        //Debug.Log("cm_move.IsComplete = " + cm_move.IsComplete);
+        ////Debug.Log"cm_move.IsComplete = " + cm_move.IsComplete);
 
         // Handle completion (orchestration logic stays here)
         if (cm_move.IsComplete)
         {
-            Debug.Log("Movement complete - calling handling");
+            //Debug.Log"Movement complete - calling handling");
             OnMoveComplete();
         }
     }
 
     private void OnMoveComplete()
     {
-        Debug.Log("Movement complete - handling orchestration");
+        //Debug.Log"Movement complete - handling orchestration");
 
         // Reset movement state
         cm_move.Reset();
-
 
         // I need to update this to use the event manager
         // Orchestration: Update phase
@@ -79,11 +78,23 @@ public class CA_MoveCharacter : MonoBehaviour
             EventManager.OnMovingComplete();
         }
 
+        //Check for if enemy or player
+
+        IUSO_State orchestratorState = userControlOrchestrator.userControlState;
 
         // Orchestration: Check turn completion
         if (turnManager != null)
         {
-            turnManager.CheckIfTurnComplete(playerControls.GetComponent<PlayerStatSheet>(), userControlOrchestrator);
+            if (orchestratorState is IUSO_Battle_PlayerTurn_State)
+            {
+                turnManager.CheckIfTurnComplete(playerControls.GetComponent<PlayerStatSheet>(), userControlOrchestrator);
+                Logger.LogCategory("Turn", "Player Battle state :: turnManager.CheckPlayerActionComplete");
+            }
+            else
+            {
+                Logger.LogCategory("Turn", "Not player, no turn check");
+            }
+           
         }
     }
 }

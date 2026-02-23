@@ -23,19 +23,19 @@ public class PlayerClickControls : MonoBehaviour
     private void OnEnable()
     {
         EventManager.ClickedTile += HandleTileClicked;
-        //Debug.Log("Listener: subscribed to ClickedTile");
+        ////Debug.Log"Listener: subscribed to ClickedTile");
     }
 
     private void OnDisable()
     {
         EventManager.ClickedTile -= HandleTileClicked;
-        //Debug.Log("Listener: unsubscribed from ClickedTile");
+        ////Debug.Log"Listener: unsubscribed from ClickedTile");
     }
 
     private void HandleTileClicked(Vector2Int gridPos)
     {
-        //Debug.Log("Listener: I heard the tile click event!");
-        //Debug.Log($"Listener: Tile clicked at: {gridPos}");
+        ////Debug.Log"Listener: I heard the tile click event!");
+        ////Debug.Log$"Listener: Tile clicked at: {gridPos}");
         // do something useful here
         float cellSize = 2f;
         float offset = cellSize / 2;

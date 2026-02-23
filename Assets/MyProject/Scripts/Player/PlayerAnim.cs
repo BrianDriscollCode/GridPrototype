@@ -34,7 +34,7 @@ public class PlayerAnim : MonoBehaviour
 
     public void RunBasicMeeleAnimation()
     {
-        //Debug.Log("Basic Meele Attack Animation");
+        ////Debug.Log"Basic Meele Attack Animation");
         //playerAnimator.SetBool(isAttackingHash, true);
         //playerAnimator.SetBool(isRunningHash, false);
         //playerAnimator.SetBool(isIdleHash, false);
@@ -42,7 +42,7 @@ public class PlayerAnim : MonoBehaviour
     
     public void RunAnimation()
     {
-        //Debug.Log("Run Animation");
+        ////Debug.Log"Run Animation");
         //playerAnimator.SetBool(isAttackingHash, false);
         //playerAnimator.SetBool(isRunningHash, true);
         //playerAnimator.SetBool(isIdleHash, false);
@@ -50,7 +50,7 @@ public class PlayerAnim : MonoBehaviour
 
     public void IdleAnimation()
     {
-        //Debug.Log("Idle Animation");
+        ////Debug.Log"Idle Animation");
         //playerAnimator.SetBool(isAttackingHash, false);
         //playerAnimator.SetBool(isRunningHash, false);
         //playerAnimator.SetBool(isIdleHash, true);

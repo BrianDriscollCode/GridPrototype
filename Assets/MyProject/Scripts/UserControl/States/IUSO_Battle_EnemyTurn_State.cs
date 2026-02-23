@@ -38,9 +38,16 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         EventManager.FinishBasicMeeleAttack += HandleFinishAttack;
         EventManager.AttackDamageGiven += HandleAttackDamageGiven;
 
-        Debug.Log("=== ENEMY TURN START ===");
+        //Debug.Log"=== ENEMY TURN START ===");
 
         input = orchestrator.input;
+
+        // hydrate selected enemy
+        enemyAI.SelectActiveEnemy();
+
+        // initialize CA 
+        InitializeControlActions();
+
         // Execute AI turn
         enemyAI.ExecuteTurn();
     }
@@ -61,6 +68,7 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
 
     private void HandleFinishAttack()
     {
+        Logger.LogCategory("Turn", "HandleFinishAttack");
         GameObject enemy = enemyAI.currentEnemy;
         PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
 
@@ -68,10 +76,16 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         //PlayerStatSheet playerStatSheet = player.GetComponent<PlayerStatSheet>();
 
         //playerStatSheet.health -= enemyStatSheet.strength;
+        characterPhase = ECharacterPhase.IDLE;
+        //Attempt to force idle
+        CA_IdleCharacter.Action();
 
+        // TEMP: So turn moves through after first attack
         enemyStatSheet.attackPoints = 0;
 
-        turnManager.CheckIfTurnComplete(enemyStatSheet, orchestrator);
+
+        turnManager.CheckEnemyActionComplete(enemyStatSheet, orchestrator);
+        //turnManager.CheckIfTurnComplete(enemyStatSheet, orchestrator);
 
     }
 
@@ -79,8 +93,11 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     // and setting the move characterPhase
     private void HandleMoveEnemy()
     {
-        InitializeControlActions();
+        GameObject enemy = enemyAI.currentEnemy;
+        PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
+
         characterPhase = ECharacterPhase.MOVE;
+
     }
 
     // When enemy reaches destination
@@ -93,21 +110,24 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
 
         if (enemyStatSheet.attackPoints > 0)
         {
-            characterPhase = ECharacterPhase.ATTACK;
+            // attack starts here
+            enemyAI.ExecuteTurn();
+            Logger.LogCategory("Turn", "Executing turn");
         }
         else
         {
             characterPhase = ECharacterPhase.IDLE;
+            Logger.LogCategory("Turn", "Flipping to Idle");
         }
-            
-        // I could start the attack here
     }
 
     public void ExitState()
     {
         EventManager.MoveEnemy -= HandleMoveEnemy;
         EventManager.MovingComplete -= HandleFinishMoving;
-        Debug.Log("=== ENEMY TURN END ===");
+        EventManager.FinishBasicMeeleAttack -= HandleFinishAttack;
+        EventManager.AttackDamageGiven -= HandleAttackDamageGiven;
+        //Debug.Log"=== ENEMY TURN END ===");
     }
 
     public void Update() { }
@@ -177,6 +197,16 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
 
     public ECharacterPhase GetCharacterPhase() => characterPhase;
     public void SetCharacterPhase(ECharacterPhase phase) => characterPhase = phase;
+
+
+    public void SetPlayerControlsAnim(ECharacterPhase phase)
+    {
+        if (phase == ECharacterPhase.IDLE)
+        {
+            CA_IdleCharacter.playerControls = enemyAI.currentEnemy.GetComponent<PlayerClickControls>();
+            CA_IdleCharacter.playerAnim = enemyAI.currentEnemy.GetComponent<PlayerAnim>();
+        }
+    }
 }
 
 //using System;
@@ -217,7 +247,7 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
 //        enemyAI = UCO.enemyAI;  // Get AI from orchestrator
 //        gridManager = UCO.gridManager;
 
-//        Debug.Log("=== ENEMY TURN START ===");
+//        //Debug.Log"=== ENEMY TURN START ===");
 
 //        // Execute AI turn
 //        enemyAI.ExecuteTurn();

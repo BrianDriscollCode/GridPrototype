@@ -44,39 +44,39 @@ public class DebugEnemyAI : MonoBehaviour
         GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight),
             userControlOrchestrator.stateString != null ? stateString : "None"))
-            Debug.Log("State String");
+            //Debug.Log"State String");
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "CurrentEnemy:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight),
             enemyAI.currentEnemy != null ? enemyAI.currentEnemy.name : "None"))
-            Debug.Log("Current Enemy clicked");
+            //Debug.Log"Current Enemy clicked");
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "CurrentTarget:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight),
             enemyAI.currentTarget != null ? enemyAI.currentTarget.name : "None"))
-            Debug.Log("Selected Character clicked");
+            //Debug.Log"Selected Character clicked");
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Available Tiles:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight), cachedAvailableTilesInfo))
-            Debug.Log("Available Tiles Info: " + cachedAvailableTilesInfo);
+            //Debug.Log"Available Tiles Info: " + cachedAvailableTilesInfo);
 
         // Refresh button for available tiles
         if (GUI.Button(new Rect(leftMargin, startY + rowHeight * 4, labelWidth + valueWidth, rowHeight), "Refresh Available Tiles"))
         {
             cachedAvailableTilesInfo = GetAvailableTilesInfo();
-            Debug.Log("Refreshed Available Tiles: " + cachedAvailableTilesInfo);
+            //Debug.Log"Refreshed Available Tiles: " + cachedAvailableTilesInfo);
         }
 
         // Grid Tiles Array Info
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 5, labelWidth, rowHeight), "Grid Tiles:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 5, valueWidth, rowHeight), cachedGridTilesInfo))
-            Debug.Log("Grid Tiles Info: " + cachedGridTilesInfo);
+            //Debug.Log"Grid Tiles Info: " + cachedGridTilesInfo);
 
         // Refresh button for grid tiles
         if (GUI.Button(new Rect(leftMargin, startY + rowHeight * 6, labelWidth + valueWidth, rowHeight), "Refresh Grid Tiles Info"))
         {
             cachedGridTilesInfo = GetGridTilesInfo();
-            Debug.Log("Refreshed Grid Tiles: " + cachedGridTilesInfo);
+            //Debug.Log"Refreshed Grid Tiles: " + cachedGridTilesInfo);
         }
 
         // Run Enemy Proto Move button
@@ -84,7 +84,7 @@ public class DebugEnemyAI : MonoBehaviour
         {
             if (enemyAI != null)
             {
-                Debug.Log("Running Enemy Proto Move...");
+                //Debug.Log"Running Enemy Proto Move...");
                 enemyAI.ExecuteTurn();
             }
             else
@@ -98,39 +98,39 @@ public class DebugEnemyAI : MonoBehaviour
         //GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Current Control Mode:");
         //if (GUI.Button(new Rect(leftMargin + labelWidth, startY, valueWidth, rowHeight),
         //    userControlOrchestrator.stateString != null ? stateString : "None"))
-        //    Debug.Log("State String");
+        //    //Debug.Log"State String");
 
         //GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "CharacterPhase:");
         //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight),
         //    userControlOrchestrator.userControlState.GetStateInfo() != null ? characterPhaseString : "None"))
-        //    Debug.Log("Current State clicked");
+        //    //Debug.Log"Current State clicked");
 
         //GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "chracter Pos:");
         //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 2, valueWidth, rowHeight),
         //    userControlOrchestrator.selectedCharacter != null ? userControlOrchestrator.selectedCharacter.transform.position.ToString() : "no character selected"))
-        //    Debug.Log("Selected Character clicked");
+        //    //Debug.Log"Selected Character clicked");
 
         //GUI.Label(new Rect(leftMargin, startY + rowHeight * 3, labelWidth, rowHeight), "Hovered Character:");
         //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 3, valueWidth, rowHeight),
         //    userControlOrchestrator.selectedCharacter != null ? gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.transform.position).ToString() : "None"))
-        //    Debug.Log("Hovered Character clicked");
+        //    //Debug.Log"Hovered Character clicked");
 
         //GUI.Label(new Rect(leftMargin, startY + rowHeight * 4, labelWidth, rowHeight), "Turn: ");
         //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 4, valueWidth, rowHeight),
         //    userControlOrchestrator.selectedCharacter != null ? gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.transform.position).ToString() : "None"))
-        //    Debug.Log("Hovered Character clicked");
+        //    //Debug.Log"Hovered Character clicked");
 
         //// Row 6: Target
         //GUI.Label(new Rect(leftMargin, startY + rowHeight * 5, labelWidth, rowHeight), "Target:");
         //string targetInfo = GetTargetInfo();
         //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 5, valueWidth, rowHeight), targetInfo))
-        //    Debug.Log("Target Info: " + targetInfo);
+        //    //Debug.Log"Target Info: " + targetInfo);
 
         //// Row 7: Selected Character Info
         //GUI.Label(new Rect(leftMargin, startY + rowHeight * 6, labelWidth, rowHeight), "Selected Character:");
         //string selectedCharInfo = GetSelectedCharacterInfo();
         //if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight * 6, valueWidth, rowHeight), selectedCharInfo))
-        //    Debug.Log("Selected Character Info: " + selectedCharInfo);
+        //    //Debug.Log"Selected Character Info: " + selectedCharInfo);
 
         //// Row 8+: All Control Actions (multiple rows)
         //DrawControlActionsList(leftMargin, startY + rowHeight * 7, labelWidth, valueWidth, rowHeight);
@@ -242,7 +242,10 @@ public class DebugEnemyAI : MonoBehaviour
                 float yPos = startY + (i * rowHeight);
 
                 if (GUI.Button(new Rect(leftMargin + labelWidth, yPos, valueWidth, rowHeight), actionName))
-                    Debug.Log($"Control Action [{i}]: {actionName}");
+                {
+                    //Debug.Log$"Control Action [{i}]: {actionName}");
+                }
+
             }
         }
         else

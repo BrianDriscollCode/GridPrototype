@@ -40,7 +40,7 @@ public class CA_SelectCharacterWithClick : MonoBehaviour
         }
         else
         {
-            //Debug.Log("No hit");
+            ////Debug.Log"No hit");
             interfaceRaycastSelection._lastRayHit = false;
             interfaceRaycastSelection._lastRayLength = 100f;
         }

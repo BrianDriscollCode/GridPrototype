@@ -11,7 +11,7 @@ public class CM_BasicMeeleAttack
     {
         playerAnim.RunBasicMeeleAnimation();
         playerAnim.ChangeAnimation("BasicMeeleAttack");
-        //Debug.Log("Running attack");
+        ////Debug.Log"Running attack");
     }
 
     public void FinishBasicMeeleAttack()

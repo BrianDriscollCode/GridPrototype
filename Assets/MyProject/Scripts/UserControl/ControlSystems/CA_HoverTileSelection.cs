@@ -32,7 +32,7 @@ public class CA_HoverTileSelection : MonoBehaviour
         }
         else
         {
-            Debug.Log("Succes to load hover material! Not error!");
+            //Debug.Log"Succes to load hover material! Not error!");
         }
     }
 
@@ -50,7 +50,7 @@ public class CA_HoverTileSelection : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, interfaceRaycastSelection.hoverLayer))
         {
-            //Debug.Log("entered");
+            ////Debug.Log"entered");
             interfaceRaycastSelection._hoverHit = true;
             interfaceRaycastSelection._hoverHitPoint = hit.point;
             interfaceRaycastSelection._hoverRayLength = hit.distance;
@@ -61,7 +61,7 @@ public class CA_HoverTileSelection : MonoBehaviour
             // Check if we started hovering a new object
             if (interfaceRaycastSelection._currentHoveredObject != hitObject)
             {
-                //Debug.Log("entered more");
+                ////Debug.Log"entered more");
                 // Exit previous hover
                 if (interfaceRaycastSelection._currentHoveredObject != null)
                 {
@@ -77,7 +77,7 @@ public class CA_HoverTileSelection : MonoBehaviour
         }
         else
         {
-            //Debug.Log("elsed");
+            ////Debug.Log"elsed");
             interfaceRaycastSelection._hoverHit = false;
             interfaceRaycastSelection._hoverRayLength = 100f;
 
@@ -111,7 +111,7 @@ public class CA_HoverTileSelection : MonoBehaviour
 
     protected virtual void OnHoverEnter(GameObject obj, Vector2Int gridPos)
     {
-        //Debug.Log($"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
+        ////Debug.Log$"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 
 
         var renderer = obj.GetComponent<Renderer>();
@@ -137,7 +137,7 @@ public class CA_HoverTileSelection : MonoBehaviour
 
     protected virtual void OnHoverExit(GameObject obj, Vector2Int gridPos)
     {
-        //Debug.Log($"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
+        ////Debug.Log$"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 
         var renderer = obj.GetComponent<Renderer>();
         if (renderer != null && _originalMaterials.ContainsKey(obj))

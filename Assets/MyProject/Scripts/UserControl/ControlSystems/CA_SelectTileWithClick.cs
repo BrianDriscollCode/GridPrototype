@@ -13,7 +13,7 @@ public class CA_SelectTileWithClick : MonoBehaviour
 
     public void Action()
     {
-        //Debug.Log("Select Tile CA Run");
+        ////Debug.Log"Select Tile CA Run");
         HandleLeftClick();
     }
 
@@ -21,7 +21,7 @@ public class CA_SelectTileWithClick : MonoBehaviour
     {
         if (input.Player.LeftClick.WasPressedThisFrame())
         {
-            Debug.Log("Handle Click is pressed");
+            //Debug.Log"Handle Click is pressed");
 
             Vector2 mousePos = Mouse.current.position.ReadValue();
             Ray ray = userControlOrchestrator.camera.ScreenPointToRay(mousePos);
@@ -39,25 +39,25 @@ public class CA_SelectTileWithClick : MonoBehaviour
                 userControlOrchestrator.selectedTile = hit.collider.gameObject;
 
                 Vector2Int gridPos = userControlOrchestrator.interfaceRaycastSelection.gridManager.WorldToGridPosition(hit.point);
-                Debug.Log("World Position of tile: " + userControlOrchestrator.interfaceRaycastSelection.gridManager.GridToWorldPosition(gridPos.x, gridPos.y));
-                //Debug.Log($"UserControlInterface::Clicked grid position: ({gridPos.x}, {gridPos.y})");
-                //Debug.Log("UserControlInterface::HasTileAt: " + userControlOrchestrator.interfaceRaycastSelection.gridManager.HasTileAt(gridPos.x, gridPos.y));
+                //Debug.Log"World Position of tile: " + userControlOrchestrator.interfaceRaycastSelection.gridManager.GridToWorldPosition(gridPos.x, gridPos.y));
+                ////Debug.Log$"UserControlInterface::Clicked grid position: ({gridPos.x}, {gridPos.y})");
+                ////Debug.Log"UserControlInterface::HasTileAt: " + userControlOrchestrator.interfaceRaycastSelection.gridManager.HasTileAt(gridPos.x, gridPos.y));
 
                 GridManager gridManager = userControlOrchestrator.interfaceRaycastSelection.gridManager;
 
                 if (gridManager.IsTileAccessible(gridPos.x, gridPos.y) && !gridManager.IsGridPosOccupied(new Vector2Int(gridPos.x, gridPos.y)))
                 {
                     EventManager.OnClickedTile(gridPos);
-                    Debug.Log("CA_SelectTileWithClick::EventManager.IsTileAccessible: Yes " + gridPos);
+                    //Debug.Log"CA_SelectTileWithClick::EventManager.IsTileAccessible: Yes " + gridPos);
                 }
                 else
                 {
-                    Debug.Log("CA_SelectTileWithClick::EventManager.IsTileAccessible: No " + gridPos);
+                    //Debug.Log"CA_SelectTileWithClick::EventManager.IsTileAccessible: No " + gridPos);
                 }
             }
             else
             {
-                Debug.Log("No hit");
+                //Debug.Log"No hit");
                 userControlOrchestrator.interfaceRaycastSelection._lastRayHit = false;
                 userControlOrchestrator.interfaceRaycastSelection._lastRayLength = 100f;
             }

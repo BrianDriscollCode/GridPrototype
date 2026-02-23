@@ -109,13 +109,13 @@ using UnityEngine.Windows;
 //    // Override these methods to implement your hover behavior
 //    protected virtual void OnHoverEnter(GameObject obj, Vector2Int gridPos)
 //    {
-//        Debug.Log($"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
+//        //Debug.Log$"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 //        // Add your hover enter logic here (e.g., highlight tile)
 //    }
 
 //    protected virtual void OnHoverExit(GameObject obj, Vector2Int gridPos)
 //    {
-//        Debug.Log($"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
+//        //Debug.Log$"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 //        // Add your hover exit logic here (e.g., remove highlight)
 //    }
 
@@ -134,14 +134,14 @@ using UnityEngine.Windows;
 //            _lastRayLength = hit.distance;
 
 //            Vector2Int gridPos = gridSystem.WorldToGridPosition(hit.point); 
-//            Debug.Log($"UserControlInterface::Clicked grid position: ({gridPos.x}, {gridPos.y})");
-//            Debug.Log("UserControlInterface::HasTileAt: " + gridSystem.HasTileAt(gridPos.x, gridPos.y));
+//            //Debug.Log$"UserControlInterface::Clicked grid position: ({gridPos.x}, {gridPos.y})");
+//            //Debug.Log"UserControlInterface::HasTileAt: " + gridSystem.HasTileAt(gridPos.x, gridPos.y));
 
 //            EventManager.OnClickedTile(gridPos);
 //        }
 //        else
 //        {
-//            Debug.Log("No hit");
+//            //Debug.Log"No hit");
 //            _lastRayHit = false;
 //            _lastRayLength = 100f;
 //        }

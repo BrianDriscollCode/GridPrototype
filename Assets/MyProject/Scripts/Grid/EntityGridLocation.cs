@@ -37,7 +37,7 @@ public class EntityGridLocation : MonoBehaviour
 
         bool gridPosXEqual = gridPos.x != pastGridPos.x ? false : true;
         bool gridPosYEqual = gridPos.y != pastGridPos.y ? false : true;
-        //Debug.Log(gameObject + " is in cell: (" + gridPos.x + "," + gridPos.y + ")");
+        ////Debug.LoggameObject + " is in cell: (" + gridPos.x + "," + gridPos.y + ")");
         if (!gridPosXEqual || !gridPosYEqual)
         {
             pastGridPos.x = gridPos.x;
