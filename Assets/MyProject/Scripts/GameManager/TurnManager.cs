@@ -16,7 +16,7 @@ public class TurnManager : MonoBehaviour
     private async void Start()
     {
         await InitializeManagersWithRetryAsync();
-        
+
         // Get or add AudioSource component
         if (audioSource == null)
         {
@@ -41,7 +41,7 @@ public class TurnManager : MonoBehaviour
             if (managerRegistry != null && managerRegistry.managerList != null && managerRegistry.managerList.Count > 0)
             {
                 GameObject managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<CharacterRegisterManager>() != null);
-                
+
                 if (managerObj != null)
                 {
                     characterRegisterManager = managerObj.GetComponent<CharacterRegisterManager>();
@@ -67,26 +67,22 @@ public class TurnManager : MonoBehaviour
         if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.ENEMY)
         {
             characterType = ECharacterType.ENEMY;
-            //Debug.LogError("CHECKTURNCOMPLETE:: Enemy");
+            Logger.LogCategory("Turn", "IsEnemy - *SHOULD NOT HAPPEN*");
         }
         else if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.PLAYER)
         {
             characterType = ECharacterType.PLAYER;
-            //Debug.LogError("CHECKTURNCOMPLETE:: Player");
         }
         else
         {
             characterType = ECharacterType.UNKNOWN_CHARACTER_TYPE;
-            //Debug.Log"CHECKTURNCOMPLETE:: UNKNOWN");
         }
 
         if (stats == null)
         {
-            Debug.LogWarning("CM_Move: No PlayerStatSheet found");
             return;
         }
 
-        // Check if character has any actions left
         if (stats.movementPoints <= 0 && stats.attackPoints <= 0)
         {
             RunTurnCompleteSound();
@@ -143,8 +139,143 @@ public class TurnManager : MonoBehaviour
                 //Debug.Log$"CM_Move: Actions remaining - MP: {stats.movementPoints}, AP: {stats.attackPoints}");
             }
         }
-    }
+    } 
 
+    //public void CheckIfTurnComplete(PlayerStatSheet stats, UserControlOrchestrator userControlOrchestrator)
+    //{
+    //    Logger.LogCategory("Turn", "CheckIfTurnComplete");
+
+    //    ECharacterType characterType;
+
+    //    if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.ENEMY)
+    //    {
+    //        characterType = ECharacterType.ENEMY;
+    //        //Debug.LogError("CHECKTURNCOMPLETE:: Enemy");
+    //    }
+    //    else if (partyTracker.GetCurrentParty() == PartyTracker.EWhosParty.PLAYER)
+    //    {
+    //        characterType = ECharacterType.PLAYER;
+    //        //Debug.LogError("CHECKTURNCOMPLETE:: Player");
+    //    }
+    //    else
+    //    {
+    //        characterType = ECharacterType.UNKNOWN_CHARACTER_TYPE;
+    //        //Debug.Log"CHECKTURNCOMPLETE:: UNKNOWN");
+    //    }
+
+    //    if (stats == null)
+    //    {
+    //        //Debug.LogWarning("CM_Move: No PlayerStatSheet found");
+    //        return;
+    //    }
+
+
+    //    //
+    //    // Check if character has any actions left
+    //    if (stats.movementPoints <= 0 && stats.attackPoints <= 0)
+    //    {
+    //        RunTurnCompleteSound();
+
+    //        // Switch character here or switch to enemy party
+
+    //        // Fetches from either player or enemy party depending on character type
+    //        GameObject nextPartyMember = CheckIfPartyMemberHasPoints(characterType);
+
+    //        if (nextPartyMember != null && characterType == ECharacterType.PLAYER)
+    //        {
+    //            userControlOrchestrator.selectedCharacter = nextPartyMember;
+
+    //            IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.userControlState as IUSO_Battle_PlayerTurn_State;
+
+    //            if (battleState != null)
+    //            {
+    //                battleState.ResetState();
+    //            }
+
+    //            //Debug.Log"CM_Move: Turn complete - switching to next party member");
+    //        }
+    //        else if (nextPartyMember != null && characterType == ECharacterType.ENEMY)
+    //        {
+    //            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+    //        }
+    //        else if (nextPartyMember == null && characterType == ECharacterType.PLAYER)
+    //        {
+    //            RestorePartyAttackAndMovementPoints(characterType);
+    //            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+    //        }
+    //        else if (nextPartyMember == null && characterType == ECharacterType.ENEMY)
+    //        {
+    //            RestorePartyAttackAndMovementPoints(characterType);
+    //            nextPartyMember = CheckIfPartyMemberHasPoints(ECharacterType.PLAYER);
+    //            userControlOrchestrator.selectedCharacter = nextPartyMember;
+    //            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_PlayerTurn_State);
+
+    //            IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.userControlState as IUSO_Battle_PlayerTurn_State;
+
+    //            if (battleState != null)
+    //            {
+    //                battleState.ResetState();
+    //            }
+    //            else
+    //            {
+    //                userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+    //                //Debug.Log"CM_Move: Turn complete - switching to next enemy turn");
+    //            }
+
+    //        }
+    //        else
+    //        {
+    //            //Debug.Log$"CM_Move: Actions remaining - MP: {stats.movementPoints}, AP: {stats.attackPoints}");
+    //        }
+    //    }
+    //}
+
+    /// <summary>
+    /// Enemy-specific turn completion - called after enemy has taken its action (move OR attack)
+    /// Enemies only take one action per turn, so we force completion regardless of remaining points
+    /// </summary>
+    public void CheckEnemyActionComplete(PlayerStatSheet stats, UserControlOrchestrator userControlOrchestrator)
+    {
+        Logger.LogCategory("Turn", "CheckEnemyActionComplete");
+
+        if (stats == null)
+        {
+            Debug.LogWarning("CheckEnemyActionComplete: No PlayerStatSheet found");
+            return;
+        }
+
+        RunTurnCompleteSound();
+
+        // Mark enemy action complete by zeroing points
+        stats.movementPoints = 0;
+        stats.attackPoints = 0;
+
+        // Check if another enemy can act
+        GameObject nextEnemy = CheckIfPartyMemberHasPoints(ECharacterType.ENEMY);
+
+        if (nextEnemy != null)
+        {
+            // Another enemy has actions - switch to that enemy
+            Logger.LogCategory("Turn", "Switching to next enemy");
+            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+        }
+        else
+        {
+            // No more enemies with actions - restore all enemy points and switch to player turn
+            Logger.LogCategory("Turn", "All enemies done - switching to player turn");
+            RestorePartyAttackAndMovementPoints(ECharacterType.ENEMY);
+
+            GameObject firstPlayer = CheckIfPartyMemberHasPoints(ECharacterType.PLAYER);
+            userControlOrchestrator.selectedCharacter = firstPlayer;
+            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_PlayerTurn_State);
+
+            IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.userControlState as IUSO_Battle_PlayerTurn_State;
+            if (battleState != null)
+            {
+                battleState.ResetState();
+            }
+        }
+    }
     public void RestorePartyAttackAndMovementPoints(ECharacterType characterType)
     {
         List<GameObject> partyMembers;

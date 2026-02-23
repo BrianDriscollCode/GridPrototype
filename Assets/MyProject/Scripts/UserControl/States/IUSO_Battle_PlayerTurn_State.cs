@@ -48,6 +48,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
 
         RegisterEventHandlers();
+        RegisterUIEventHandlers();
 
         ManagerRegistry managerRegistry = GameObject.FindAnyObjectByType<ManagerRegistry>();
 
@@ -359,6 +360,26 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         EventManager.MovingComplete += HandleMovingComplete;
         EventManager.AttackDamageGiven += HandleAttackDamageGiven;
     }
+
+    private void RegisterUIEventHandlers()
+    {
+        UIEventManager.EndTurnButtonClicked += HandleEndButtonClicked;
+    }
+
+
+    private void HandleEndButtonClicked()
+    {
+        List<GameObject> characterList = movementPointsManager.characters;
+        GameObject matchingCharacter = characterList.Find(obj => obj == activeCharacter);
+        PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
+
+        playerStatSheet.movementPoints = 0;
+        playerStatSheet.attackPoints = 0;
+
+        turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
+        //userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+    }
+
 
     private void HandleTileClicked(Vector2Int clickedGridPos)
     {

@@ -84,7 +84,8 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         enemyStatSheet.attackPoints = 0;
 
 
-        turnManager.CheckIfTurnComplete(enemyStatSheet, orchestrator);
+        turnManager.CheckEnemyActionComplete(enemyStatSheet, orchestrator);
+        //turnManager.CheckIfTurnComplete(enemyStatSheet, orchestrator);
 
     }
 
@@ -92,7 +93,11 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     // and setting the move characterPhase
     private void HandleMoveEnemy()
     {
+        GameObject enemy = enemyAI.currentEnemy;
+        PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
+
         characterPhase = ECharacterPhase.MOVE;
+
     }
 
     // When enemy reaches destination
