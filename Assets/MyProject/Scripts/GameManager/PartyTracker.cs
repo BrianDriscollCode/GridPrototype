@@ -8,7 +8,7 @@ public class PartyTracker : MonoBehaviour
         ENEMY
     }
 
-    private EWhosParty currentParty;
+    [SerializeField] private EWhosParty currentParty;
 
     private void Awake()
     {

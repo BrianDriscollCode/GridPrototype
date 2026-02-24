@@ -85,6 +85,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         input = userControlOrchestrator.input;
 
         InitialiazeControlActions();
+
+        CheckAvailableTilesHelper();
     }
 
     public void ExitState()
@@ -94,6 +96,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         EventManager.FinishBasicMeeleAttack -= HandleFinishBasicAttack;
         EventManager.MovingComplete -= HandleMovingComplete;
         EventManager.AttackDamageGiven -= HandleAttackDamageGiven;
+
+        UIEventManager.EndTurnButtonClicked -= HandleEndButtonClicked;
 
         // Clean up all components
         DestroyComponent(CA_HoverTileSelection);
@@ -173,7 +177,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
     {
         DestroyMultipleControlActions(allControlActions);
         InitialiazeControlActions();
-
+        CheckAvailableTilesHelper();
     }
 
     public List<MonoBehaviour> GetAllControlActions()
@@ -367,18 +371,29 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
     }
 
 
+    //private void HandleEndButtonClicked()
+    //{
+    //    List<GameObject> characterList = movementPointsManager.characters;
+    //    GameObject matchingCharacter = characterList.Find(obj => obj == activeCharacter);
+    //    PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
+
+    //    playerStatSheet.movementPoints = 0;
+    //    playerStatSheet.attackPoints = 0;
+    //    playerStatSheet.turnComplete = true;
+
+    //    turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
+    //}
     private void HandleEndButtonClicked()
     {
-        List<GameObject> characterList = movementPointsManager.characters;
-        GameObject matchingCharacter = characterList.Find(obj => obj == activeCharacter);
-        PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
+        PlayerStatSheet playerStatSheet = activeCharacter.GetComponent<PlayerStatSheet>();
 
         playerStatSheet.movementPoints = 0;
         playerStatSheet.attackPoints = 0;
+        playerStatSheet.turnComplete = true;
 
         turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
-        //userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
     }
+
 
 
     private void HandleTileClicked(Vector2Int clickedGridPos)
@@ -492,15 +507,37 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
         if (matchingCharacter != null)
         {
+            Logger.LogCategory("Grid", "HandleMovingComplete - Character Match");
             PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
-            characterPhase = ECharacterPhase.IDLE;
+            //characterPhase = ECharacterPhase.IDLE;
 
+            CheckAvailableTilesHelper();
             // *** State May Switch
             turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
+            
         }
+        else
+        {
+            Logger.LogCategory("Grid", "HandleMovingComplete - No Match");
+        }    
+    }
+
+    private void CheckAvailableTilesHelper()
+    {
+        // highlight available moves
+        GameObject character = userControlOrchestrator.selectedCharacter;
+        int characterMovePoints = character.GetComponent<PlayerStatSheet>().movementPoints;
+        Vector2Int characterGridPos = gridManager.WorldToGridPosition(character.GetComponent<EntityGridLocation>().pos);
+
+        gridManager.CheckAvailableMoveTilesAndHighlight(characterMovePoints, characterGridPos);
     }
 }
 
+// Helpers
+
+
+
+//
 public class InfoObject
 {
     public ECharacterPhase characterPhase;

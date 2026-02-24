@@ -9,11 +9,12 @@ public class GridManager : MonoBehaviour
     public CharacterPositionTracker characterPositionTracker;
     public Dictionary<GameObject, Vector2Int> characterPositionList;
 
+    [Header("Tracking Available Tiles Per Character")]
+    public List<GameObject> availableTiles;
+
     [Header("Level Data")]
     public LevelScriptableObject levelData; // Reference to your scriptable object
     public bool useLevelData = false; // Toggle to use SO data vs manual settings
-
-
 
     [Header("Grid Settings")]
     public bool generate = true;
@@ -30,9 +31,24 @@ public class GridManager : MonoBehaviour
     // 2D array to store what's in each grid cell
     public GameObject[,] gridTiles;
 
+    [Header("Debug - Grid Visualization")]
+    [SerializeField] private List<TileDebugInfo> tilesDebugList = new List<TileDebugInfo>();
+
+    [Header("Tile Highlighting")]
+    public Material highlightedMoveMaterial;
+    private Dictionary<GameObject, Material> _highlightedTileOriginalMaterials = new Dictionary<GameObject, Material>();
+    private List<GameObject> _currentlyHighlightedTiles = new List<GameObject>();
+
+    [System.Serializable]
+    public class TileDebugInfo
+    {
+        public Vector2Int gridPosition;
+        public GameObject tile;
+    }
 
     void Start()
     {
+        availableTiles = new List<GameObject>();
         //// Only run in Play mode to avoid issues when stopping the scene
         //if (!Application.isPlaying) return;
 
@@ -71,6 +87,32 @@ public class GridManager : MonoBehaviour
         {
             // If not generating, populate the array with existing tiles
             PopulateGridFromExistingTiles();
+        }
+
+        // Update debug visualization
+        UpdateDebugList();
+    }
+
+    // Update the inspector-visible debug list
+    private void UpdateDebugList()
+    {
+        tilesDebugList.Clear();
+
+        if (gridTiles == null) return;
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int z = 0; z < gridHeight; z++)
+            {
+                if (gridTiles[x, z] != null)
+                {
+                    tilesDebugList.Add(new TileDebugInfo
+                    {
+                        gridPosition = new Vector2Int(x, z),
+                        tile = gridTiles[x, z]
+                    });
+                }
+            }
         }
     }
 
@@ -114,6 +156,7 @@ public class GridManager : MonoBehaviour
         }
 
         //Debug.Log$"Populated gridTiles array with {foundTiles} existing tiles");
+        UpdateDebugList();
     }
 
     public bool IsTileAccessible(int col, int row)
@@ -141,6 +184,7 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
+        UpdateDebugList();
     }
 
     public void GenerateGrid()
@@ -161,6 +205,7 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
+        UpdateDebugList();
     }
 
     // Generate grid based on LevelScriptableObject data
@@ -245,6 +290,7 @@ public class GridManager : MonoBehaviour
         {
             Destroy(gridTiles[gridX, gridZ]);
             gridTiles[gridX, gridZ] = null;
+            UpdateDebugList();
         }
     }
 
@@ -315,6 +361,94 @@ public class GridManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    // ****** Path and Availability Management for Characters
+
+    public void CheckAvailableMoveTilesAndHighlight(int movePoints, Vector2Int characterPos)
+    {
+        Logger.LogCategory("Grid", "CheckAvailableMoveTilesAndHighlight");
+
+        // Clear highlighted tiles FIRST (restores materials while we still have references)
+        ClearHighlightedTiles();
+        
+        // Then clear the available tiles list
+        ClearAvailableTiles();
+
+        // Iterate through grid using nested loops (can't foreach a 2D array)
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int z = 0; z < gridHeight; z++)
+            {
+                // Skip if no tile exists
+                if (gridTiles[x, z] == null) continue;
+
+                Vector2Int tilePos = new Vector2Int(x, z);
+                
+                // Validation pipeline (same as EnemyAI)
+                if (!IsValidGridPosition(x, z)) continue;
+                if (!HasTileAt(x, z)) continue;
+                if (!IsTileAccessible(x, z)) continue;
+                if (IsGridPosOccupied(tilePos)) continue;
+                
+                // Check if tile is within movement range
+                if (GetTileDistance(characterPos, tilePos) <= movePoints)
+                {
+                    availableTiles.Add(gridTiles[x, z]);
+                }
+            }
+        }
+
+        // Highlight all available tiles
+        foreach (GameObject tile in availableTiles)
+        {
+            HighlightTile(tile);
+        }
+    }
+
+    private void HighlightTile(GameObject tile)
+    {
+        var renderer = tile.GetComponent<Renderer>();
+        if (renderer == null) return;
+
+        // Store original material if not already stored
+        if (!_highlightedTileOriginalMaterials.ContainsKey(tile))
+        {
+            _highlightedTileOriginalMaterials[tile] = renderer.material;
+        }
+
+        // Apply highlight material
+        if (highlightedMoveMaterial != null)
+        {
+            renderer.material = highlightedMoveMaterial;
+            _currentlyHighlightedTiles.Add(tile);
+        }
+        else
+        {
+            Debug.LogWarning("highlightedMoveMaterial is not assigned in GridManager!");
+        }
+    }
+
+    public void ClearAvailableTiles()
+    {
+        availableTiles.Clear();
+    }
+
+    public void ClearHighlightedTiles()
+    {
+        foreach (GameObject tile in _currentlyHighlightedTiles)
+        {
+            if (tile == null) continue;
+            
+            var renderer = tile.GetComponent<Renderer>();
+            if (renderer != null && _highlightedTileOriginalMaterials.ContainsKey(tile))
+            {
+                renderer.material = _highlightedTileOriginalMaterials[tile];
+            }
+        }
+
+        _currentlyHighlightedTiles.Clear();
+        _highlightedTileOriginalMaterials.Clear();
     }
 
     // Visualize the grid in the editor

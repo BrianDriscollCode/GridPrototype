@@ -68,10 +68,13 @@ public class CA_MoveCharacter : MonoBehaviour
         // I need to update this to use the event manager
         // Orchestration: Update phase
 
+
+        // *** This should be handled in player battle state with OnMovingComplete event
         if (userControlOrchestrator.userControlState == userControlOrchestrator.battle_PlayerTurn_State)
         {
             userControlOrchestrator.userControlState.SetCharacterPhase(ECharacterPhase.IDLE);
             userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");
+            EventManager.OnMovingComplete();
         }
         else if (userControlOrchestrator.userControlState == userControlOrchestrator.battle_EnemyTurn_State)
         {
@@ -83,18 +86,18 @@ public class CA_MoveCharacter : MonoBehaviour
         IUSO_State orchestratorState = userControlOrchestrator.userControlState;
 
         // Orchestration: Check turn completion
-        if (turnManager != null)
-        {
-            if (orchestratorState is IUSO_Battle_PlayerTurn_State)
-            {
-                turnManager.CheckIfTurnComplete(playerControls.GetComponent<PlayerStatSheet>(), userControlOrchestrator);
-                Logger.LogCategory("Turn", "Player Battle state :: turnManager.CheckPlayerActionComplete");
-            }
-            else
-            {
-                Logger.LogCategory("Turn", "Not player, no turn check");
-            }
+        //if (turnManager != null)
+        //{
+        //    if (orchestratorState is IUSO_Battle_PlayerTurn_State)
+        //    {
+        //        turnManager.CheckIfTurnComplete(playerControls.GetComponent<PlayerStatSheet>(), userControlOrchestrator);
+        //        Logger.LogCategory("Turn", "Player Battle state :: turnManager.CheckPlayerActionComplete");
+        //    }
+        //    else
+        //    {
+        //        Logger.LogCategory("Turn", "Not player, no turn check");
+        //    }
            
-        }
+        //}
     }
 }
