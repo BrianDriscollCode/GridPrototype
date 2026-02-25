@@ -39,6 +39,10 @@ public class GridManager : MonoBehaviour
     private Dictionary<GameObject, Material> _highlightedTileOriginalMaterials = new Dictionary<GameObject, Material>();
     private List<GameObject> _currentlyHighlightedTiles = new List<GameObject>();
 
+    [Header("A* Tile Highlighting")]
+    public Material highlightedAStarPathMaterial;
+
+
     [System.Serializable]
     public class TileDebugInfo
     {
@@ -365,6 +369,165 @@ public class GridManager : MonoBehaviour
 
     // ****** Path and Availability Management for Characters
 
+    public void CalculatePathToDestinationAndHighlight(Vector2Int characterPos, Vector2Int destinationPos)
+    {
+        List<Vector2Int> path = FindPathAStar(characterPos, destinationPos);
+        
+        if (path == null || path.Count == 0)
+        {
+            Debug.LogWarning($"No path found from {characterPos} to {destinationPos}");
+            return;
+        }
+
+        // Clear any existing highlights
+        ClearHighlightedTiles();
+
+        // Highlight the path tiles (excluding start position)
+        foreach (Vector2Int pos in path)
+        {
+            if (pos == characterPos) continue; // Skip starting position
+            
+            GameObject tile = GetTile(pos.x, pos.y);
+            if (tile != null)
+            {
+                HighlightTile(tile);
+            }
+        }
+
+        Logger.LogCategory("Grid", $"Path found with {path.Count} steps");
+    }
+
+    /// <summary>
+    /// A* pathfinding implementation using Chebyshev distance for diagonal movement
+    /// </summary>
+    private List<Vector2Int> FindPathAStar(Vector2Int start, Vector2Int goal)
+    {
+        // Validate endpoints
+        if (!IsValidGridPosition(start.x, start.y) || !IsValidGridPosition(goal.x, goal.y))
+        {
+            return null;
+        }
+
+        if (!HasTileAt(goal.x, goal.y) || !IsTileAccessible(goal.x, goal.y))
+        {
+            return null;
+        }
+
+        // Data structures for A*
+        Dictionary<Vector2Int, int> gScore = new Dictionary<Vector2Int, int>();
+        Dictionary<Vector2Int, int> fScore = new Dictionary<Vector2Int, int>();
+        Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+        HashSet<Vector2Int> closedSet = new HashSet<Vector2Int>();
+        
+        // Priority queue (using sorted list as simple priority queue)
+        List<Vector2Int> openSet = new List<Vector2Int>();
+
+        // Initialize start node
+        gScore[start] = 0;
+        fScore[start] = GetTileDistance(start, goal); // Heuristic
+        openSet.Add(start);
+
+        // 8-directional movement (including diagonals)
+        Vector2Int[] directions = new Vector2Int[]
+        {
+            new Vector2Int(0, 1),   // North
+            new Vector2Int(1, 0),   // East
+            new Vector2Int(0, -1),  // South
+            new Vector2Int(-1, 0),  // West
+            new Vector2Int(1, 1),   // NE
+            new Vector2Int(1, -1),  // SE
+            new Vector2Int(-1, -1), // SW
+            new Vector2Int(-1, 1)   // NW
+        };
+
+        while (openSet.Count > 0)
+        {
+            // Find node with lowest fScore
+            Vector2Int current = openSet[0];
+            int lowestF = fScore.ContainsKey(current) ? fScore[current] : int.MaxValue;
+            
+            for (int i = 1; i < openSet.Count; i++)
+            {
+                int currentF = fScore.ContainsKey(openSet[i]) ? fScore[openSet[i]] : int.MaxValue;
+                if (currentF < lowestF)
+                {
+                    current = openSet[i];
+                    lowestF = currentF;
+                }
+            }
+
+            // Goal reached - reconstruct path
+            if (current == goal)
+            {
+                return ReconstructPath(cameFrom, current);
+            }
+
+            openSet.Remove(current);
+            closedSet.Add(current);
+
+            // Check all neighbors
+            foreach (Vector2Int dir in directions)
+            {
+                Vector2Int neighbor = current + dir;
+
+                // Skip if already evaluated
+                if (closedSet.Contains(neighbor))
+                    continue;
+
+                // Validate neighbor
+                if (!IsValidGridPosition(neighbor.x, neighbor.y))
+                    continue;
+                if (!HasTileAt(neighbor.x, neighbor.y))
+                    continue;
+                if (!IsTileAccessible(neighbor.x, neighbor.y))
+                    continue;
+                
+                // Allow pathfinding through occupied tiles (player can plan path)
+                // but you can uncomment this if you want to block occupied tiles
+                // if (neighbor != goal && IsGridPosOccupied(neighbor))
+                //     continue;
+
+                // Calculate tentative gScore (all moves cost 1 with Chebyshev)
+                int tentativeGScore = gScore[current] + 1;
+
+                // Add to open set if new
+                if (!openSet.Contains(neighbor))
+                {
+                    openSet.Add(neighbor);
+                }
+                else if (tentativeGScore >= (gScore.ContainsKey(neighbor) ? gScore[neighbor] : int.MaxValue))
+                {
+                    // Not a better path
+                    continue;
+                }
+
+                // This is the best path so far
+                cameFrom[neighbor] = current;
+                gScore[neighbor] = tentativeGScore;
+                fScore[neighbor] = tentativeGScore + GetTileDistance(neighbor, goal);
+            }
+        }
+
+        // No path found
+        return null;
+    }
+
+    /// <summary>
+    /// Reconstructs the path from start to goal using the cameFrom map
+    /// </summary>
+    private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
+    {
+        List<Vector2Int> path = new List<Vector2Int> { current };
+
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            path.Insert(0, current); // Insert at beginning to maintain order
+        }
+
+        return path;
+    }
+
     public void CheckAvailableMoveTilesAndHighlight(int movePoints, Vector2Int characterPos)
     {
         Logger.LogCategory("Grid", "CheckAvailableMoveTilesAndHighlight");
@@ -420,7 +583,7 @@ public class GridManager : MonoBehaviour
         // Apply highlight material
         if (highlightedMoveMaterial != null)
         {
-            renderer.material = highlightedMoveMaterial;
+            renderer.material = highlightedAStarPathMaterial;
             _currentlyHighlightedTiles.Add(tile);
         }
         else

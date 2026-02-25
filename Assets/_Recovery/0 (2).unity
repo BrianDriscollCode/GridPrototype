@@ -10053,7 +10053,6 @@ MonoBehaviour:
   prefabOffset: {x: 1, y: 0, z: 1}
   tilesDebugList: []
   highlightedMoveMaterial: {fileID: 2100000, guid: 1e24bb9cfb5630748887b5620bf2a9fc, type: 2}
-  highlightedAStarPathMaterial: {fileID: 2100000, guid: 946c533e8b0c3994dae253193bd26029, type: 2}
 --- !u!4 &685214080
 Transform:
   m_ObjectHideFlags: 0

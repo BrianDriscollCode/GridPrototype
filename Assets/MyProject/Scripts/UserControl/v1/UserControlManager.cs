@@ -77,7 +77,7 @@ public class UserControlManager : MonoBehaviour
         input = GameObject.Find("InputSystem").GetComponent<InputSystem>().input;
 
         CA_HoverTileSelection = gameObject.AddComponent<CA_HoverTileSelection>();
-        CA_HoverTileSelection.userControlManager = this;
+        //CA_HoverTileSelection.userControlManager = this;
 
         CA_HoverCharacter = gameObject.AddComponent<CA_HoverCharacter>();
         CA_HoverCharacter.userControlManager = this;

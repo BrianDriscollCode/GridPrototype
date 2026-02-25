@@ -19,9 +19,19 @@ public class CA_HoverTileSelection : MonoBehaviour
     private Color _originalColor;
     private Dictionary<GameObject, Material> _originalMaterials = new Dictionary<GameObject, Material>();
 
+    private ManagerRegistry managerRegistry;
+    private GridManager gridManager;
+
 
     private void Start()
     {
+
+        if (managerRegistry == null)
+        {
+            managerRegistry = FindObjectOfType<ManagerRegistry>();
+        }
+
+        gridManager = FindManager<GridManager>();
         // access materials from files
         _hoveredMaterialInstance = Resources.Load<Material>("Materials/grid_tile_top_512_thicklines_lightouterPurp");
         _hoveredNoAccessMaterialInstance = Resources.Load<Material>("Materials/grid_tile_top_512_thicklines_Red");
@@ -114,6 +124,24 @@ public class CA_HoverTileSelection : MonoBehaviour
         ////Debug.Log$"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
 
 
+        if (gridManager == null)
+        {
+            // Ensure managerRegistry is initialized first
+            if (managerRegistry == null)
+            {
+                managerRegistry = FindObjectOfType<ManagerRegistry>();
+            }
+
+            gridManager = FindManager<GridManager>();
+
+            // If still null after attempting to find, log error and exit
+            if (gridManager == null)
+            {
+                Debug.LogError("CA_HoverTileSelection: Failed to find GridManager!");
+                return;
+            }
+        }
+
         var renderer = obj.GetComponent<Renderer>();
         if (renderer != null)
         {
@@ -125,6 +153,9 @@ public class CA_HoverTileSelection : MonoBehaviour
             {
                 // Switch to correct material based on tile accessibility
                 renderer.material = _hoveredMaterialInstance;
+                Vector2Int characterPos = gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.GetComponent<EntityGridLocation>().pos);
+                Vector2Int destPos = gridManager.WorldToGridPosition(obj.transform.position);
+                gridManager.CalculatePathToDestinationAndHighlight(characterPos, destPos);
             }
             else
             {
@@ -144,5 +175,14 @@ public class CA_HoverTileSelection : MonoBehaviour
         {
             renderer.material = _originalMaterials[obj];
         }
+    }
+
+    // Need to make a helper for all scripts
+    private T FindManager<T>() where T : MonoBehaviour
+    {
+        if (managerRegistry == null) return null;
+
+        GameObject managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<T>() != null);
+        return managerObj?.GetComponent<T>();
     }
 }
