@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // must rename to ControlOrchestrator, this has been relegated to
@@ -33,6 +34,23 @@ public class UserControlOrchestrator : MonoBehaviour
     // Manager references shared with AI and states
     private MovementPointsManager movementPointsManager;
     private CharacterRegisterManager characterRegisterManager;
+
+    private Stack<IUSO_State> stateStack = new Stack<IUSO_State>();
+
+    public void PushState(IUSO_State state)
+    {
+        userControlState?.ExitState();
+        stateStack.Push(userControlState);
+        userControlState = state;
+        userControlState?.EnterState(this);
+    }
+
+    public void PopState()
+    {
+        userControlState?.ExitState();
+        userControlState = stateStack.Count > 0 ? stateStack.Pop() : null;
+        userControlState?.EnterState(this); // re-enter so it resets CAs cleanly
+    }
 
     public void Start()
     {

@@ -115,6 +115,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         CA_SelectTileWithClick = null;
         CA_IdleCharacter = null;
         CA_SelectCharacterWithClick = null;
+
+        gridManager.GetComponent<HighlightGridTile>().ClearAllHighlights();
     }
 
 

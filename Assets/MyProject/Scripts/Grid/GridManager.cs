@@ -35,12 +35,14 @@ public class GridManager : MonoBehaviour
     [SerializeField] private List<TileDebugInfo> tilesDebugList = new List<TileDebugInfo>();
 
     [Header("Tile Highlighting")]
+    [SerializeField] private HighlightGridTile highlightGridTile;
     public Material highlightedMoveMaterial;
     private Dictionary<GameObject, Material> _highlightedTileOriginalMaterials = new Dictionary<GameObject, Material>();
     private List<GameObject> _currentlyHighlightedTiles = new List<GameObject>();
 
     [Header("A* Tile Highlighting")]
     public Material highlightedAStarPathMaterial;
+
 
 
     [System.Serializable]
@@ -52,6 +54,10 @@ public class GridManager : MonoBehaviour
 
     void Start()
     {
+        if (highlightGridTile == null)
+            highlightGridTile = GetComponent<HighlightGridTile>() ?? gameObject.AddComponent<HighlightGridTile>();
+
+        //highlightGridTile = gameObject.AddComponent<HighlightGridTile>();
         availableTiles = new List<GameObject>();
         //// Only run in Play mode to avoid issues when stopping the scene
         //if (!Application.isPlaying) return;
@@ -379,18 +385,19 @@ public class GridManager : MonoBehaviour
             return;
         }
 
-        // Clear any existing highlights
-        ClearHighlightedTiles();
+        // Clear only path highlights (not movement range)
+        highlightGridTile.ClearHighlightsByType(HighlightGridTile.HighlightType.PathPreview);
 
-        // Highlight the path tiles (excluding start position)
+        // Highlight the path tiles
+        Color pathColor = new Color(0f, 1f, 0.5f, 1f); // Green for path
         foreach (Vector2Int pos in path)
         {
-            if (pos == characterPos) continue; // Skip starting position
+            if (pos == characterPos) continue;
             
             GameObject tile = GetTile(pos.x, pos.y);
             if (tile != null)
             {
-                HighlightTile(tile);
+                highlightGridTile.HighlightTile(tile, pathColor, HighlightGridTile.HighlightType.PathPreview);
             }
         }
 
@@ -571,25 +578,8 @@ public class GridManager : MonoBehaviour
 
     private void HighlightTile(GameObject tile)
     {
-        var renderer = tile.GetComponent<Renderer>();
-        if (renderer == null) return;
-
-        // Store original material if not already stored
-        if (!_highlightedTileOriginalMaterials.ContainsKey(tile))
-        {
-            _highlightedTileOriginalMaterials[tile] = renderer.material;
-        }
-
-        // Apply highlight material
-        if (highlightedMoveMaterial != null)
-        {
-            renderer.material = highlightedAStarPathMaterial;
-            _currentlyHighlightedTiles.Add(tile);
-        }
-        else
-        {
-            Debug.LogWarning("highlightedMoveMaterial is not assigned in GridManager!");
-        }
+        Color highlightColor = new Color(0.3f, 0.7f, 1f, 1f); // Blue for movement range
+        highlightGridTile.HighlightTile(tile, highlightColor, HighlightGridTile.HighlightType.MoveRange);
     }
 
     public void ClearAvailableTiles()
@@ -599,16 +589,8 @@ public class GridManager : MonoBehaviour
 
     public void ClearHighlightedTiles()
     {
-        foreach (GameObject tile in _currentlyHighlightedTiles)
-        {
-            if (tile == null) continue;
-            
-            var renderer = tile.GetComponent<Renderer>();
-            if (renderer != null && _highlightedTileOriginalMaterials.ContainsKey(tile))
-            {
-                renderer.material = _highlightedTileOriginalMaterials[tile];
-            }
-        }
+        if (highlightGridTile != null)
+            highlightGridTile.ClearHighlightsByType(HighlightGridTile.HighlightType.MoveRange);
 
         _currentlyHighlightedTiles.Clear();
         _highlightedTileOriginalMaterials.Clear();

@@ -14,18 +14,18 @@ public class CA_HoverTileSelection : MonoBehaviour
     public InterfaceRaycastSelection interfaceRaycastSelection;
 
     // Managing material and color swaps
-    public Material _hoveredMaterialInstance;
-    public Material _hoveredNoAccessMaterialInstance;
+    public UnityEngine.Material _hoveredMaterialInstance;
+    public UnityEngine.Material _hoveredNoAccessMaterialInstance;
     private Color _originalColor;
-    private Dictionary<GameObject, Material> _originalMaterials = new Dictionary<GameObject, Material>();
+    private Dictionary<GameObject, UnityEngine.Material> _originalMaterials = new Dictionary<GameObject, Material>();
 
     private ManagerRegistry managerRegistry;
     private GridManager gridManager;
 
 
+
     private void Start()
     {
-
         if (managerRegistry == null)
         {
             managerRegistry = FindObjectOfType<ManagerRegistry>();
@@ -33,8 +33,8 @@ public class CA_HoverTileSelection : MonoBehaviour
 
         gridManager = FindManager<GridManager>();
         // access materials from files
-        _hoveredMaterialInstance = Resources.Load<Material>("Materials/grid_tile_top_512_thicklines_lightouterPurp");
-        _hoveredNoAccessMaterialInstance = Resources.Load<Material>("Materials/grid_tile_top_512_thicklines_Red");
+        _hoveredMaterialInstance = Resources.Load<UnityEngine.Material>("Materials/grid_tile_top_512_thicklines_lightouterPurp");
+        _hoveredNoAccessMaterialInstance = Resources.Load<UnityEngine.Material>("Materials/grid_tile_top_512_thicklines_Red");
 
         if (_hoveredMaterialInstance == null)
         {
@@ -50,6 +50,7 @@ public class CA_HoverTileSelection : MonoBehaviour
     {
         HandleHover();
     }
+
     public void HandleHover()
     {
         // Raycast from camera center (like a crosshair)
@@ -76,7 +77,6 @@ public class CA_HoverTileSelection : MonoBehaviour
                 if (interfaceRaycastSelection._currentHoveredObject != null)
                 {
                     OnHoverExit(interfaceRaycastSelection._currentHoveredObject, interfaceRaycastSelection._currentHoveredGridPos);
-                    
                 }
 
                 // Enter new hover
@@ -99,9 +99,8 @@ public class CA_HoverTileSelection : MonoBehaviour
                 interfaceRaycastSelection._currentHoveredGridPos = new Vector2Int(-1, -1);
             }
         }
-
-
     }
+
     private void OnDestroy()
     {
         // Clean up hover state when component is destroyed
@@ -121,20 +120,13 @@ public class CA_HoverTileSelection : MonoBehaviour
 
     protected virtual void OnHoverEnter(GameObject obj, Vector2Int gridPos)
     {
-        ////Debug.Log$"Hover Enter: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
-
-
         if (gridManager == null)
         {
-            // Ensure managerRegistry is initialized first
             if (managerRegistry == null)
-            {
                 managerRegistry = FindObjectOfType<ManagerRegistry>();
-            }
 
             gridManager = FindManager<GridManager>();
 
-            // If still null after attempting to find, log error and exit
             if (gridManager == null)
             {
                 Debug.LogError("CA_HoverTileSelection: Failed to find GridManager!");
@@ -142,39 +134,19 @@ public class CA_HoverTileSelection : MonoBehaviour
             }
         }
 
-        var renderer = obj.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            // Store original if not already stored
-            if (!_originalMaterials.ContainsKey(obj))
-                _originalMaterials[obj] = renderer.material;
+        Color highlightColor = new Color(0.2f, 0.2f, 0.2f, 1f); // Dark gray
+        Color rimLightColor = new Color(0.3f, 0.3f, 0.3f, 1f); // Ligh
+        float rimPower = 3f;
 
-            if(userControlOrchestrator.gridManager.levelData.IsAccessible(gridPos.x, gridPos.y))
-            {
-                // Switch to correct material based on tile accessibility
-                renderer.material = _hoveredMaterialInstance;
-                Vector2Int characterPos = gridManager.WorldToGridPosition(userControlOrchestrator.selectedCharacter.GetComponent<EntityGridLocation>().pos);
-                Vector2Int destPos = gridManager.WorldToGridPosition(obj.transform.position);
-                gridManager.CalculatePathToDestinationAndHighlight(characterPos, destPos);
-            }
-            else
-            {
-                // Switch to correct material based on tile accessibility
-                renderer.material = _hoveredNoAccessMaterialInstance;
-            }
-        }
+        gridManager.GetComponent<HighlightGridTile>()
+            .HighlightTileWithRim(obj, highlightColor, rimLightColor, rimPower, HighlightGridTile.HighlightType.Hover);
     }
-
 
     protected virtual void OnHoverExit(GameObject obj, Vector2Int gridPos)
     {
-        ////Debug.Log$"Hover Exit: {obj.name} at grid ({gridPos.x}, {gridPos.y})");
-
-        var renderer = obj.GetComponent<Renderer>();
-        if (renderer != null && _originalMaterials.ContainsKey(obj))
-        {
-            renderer.material = _originalMaterials[obj];
-        }
+        // Only remove hover highlight - movement range highlights remain
+        gridManager.GetComponent<HighlightGridTile>()
+            .RemoveHighlight(obj, HighlightGridTile.HighlightType.Hover);
     }
 
     // Need to make a helper for all scripts
