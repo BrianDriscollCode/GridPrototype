@@ -41,6 +41,11 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private PartyTracker partyTracker;
 
+    private bool inReactionState;
+
+    private string pausedAnimationName;
+    private float pausedAnimationTime;
+
     public void EnterState(UserControlOrchestrator USO)
     {
         allControlActions = new List<MonoBehaviour>();
@@ -91,13 +96,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     public void ExitState()
     {
-        EventManager.ClickedTile -= HandleTileClicked;
-        EventManager.RightClickAttack -= HandleBasicAttack;
-        EventManager.FinishBasicMeeleAttack -= HandleFinishBasicAttack;
-        EventManager.MovingComplete -= HandleMovingComplete;
-        EventManager.AttackDamageGiven -= HandleAttackDamageGiven;
-
-        UIEventManager.EndTurnButtonClicked -= HandleEndButtonClicked;
+        RemoveEventHandlers();
+        RemoveUIEventHandlers();
 
         // Clean up all components
         DestroyComponent(CA_HoverTileSelection);
@@ -106,6 +106,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         DestroyComponent(CA_SelectTileWithClick);
         DestroyComponent(CA_IdleCharacter);
         DestroyComponent(CA_SelectCharacterWithClick);
+        DestroyComponent(CA_BasicMeeleAttack);
 
         // Clear references
         interfaceRaycastSelection = null; // only ref no component - this is good
@@ -130,6 +131,11 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             CA_SelectTileWithClick.Action();
         }
         CA_BasicMeeleAttack.ActionHandler();
+
+        if (input.Player.Exit.WasPressedThisFrame())
+        {
+            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+        }
     }
 
     public void FixedUpdate()
@@ -151,12 +157,42 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         {
             gridManager.characterPositionTracker.PrintCharacterPositionList();
         }
+    }
 
-        if (input.Player.Exit.IsPressed())
+    /// <summary>Pauses the animator and disables control actions. Called on PushState.</summary>
+    public void SuspendState()
+    {
+        if (userControlOrchestrator.selectedCharacter != null)
         {
-            userControlOrchestrator.SwitchState(userControlOrchestrator.battle_EnemyTurn_State);
+            PlayerAnim playerAnim = userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>();
+            if (playerAnim != null && playerAnim.playerAnimator != null)
+                playerAnim.playerAnimator.speed = 0f;
+        }
+        SetControlActionsEnabled(false);
+    }
+
+    /// <summary>Unpauses the animator and re-enables control actions. Called on PopState.</summary>
+    public void ResumeState()
+    {
+        SetControlActionsEnabled(true);
+
+        if (userControlOrchestrator.selectedCharacter != null)
+        {
+            PlayerAnim playerAnim = userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>();
+            if (playerAnim != null && playerAnim.playerAnimator != null)
+                playerAnim.playerAnimator.speed = 1f;
         }
     }
+
+    private void SetControlActionsEnabled(bool enabled)
+    {
+        foreach (MonoBehaviour ca in allControlActions)
+        {
+            if (ca != null)
+                ca.enabled = enabled;
+        }
+    }
+
 
     private void InitialiazeControlActions()
     {
@@ -365,11 +401,29 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         EventManager.FinishBasicMeeleAttack += HandleFinishBasicAttack;
         EventManager.MovingComplete += HandleMovingComplete;
         EventManager.AttackDamageGiven += HandleAttackDamageGiven;
+        EventManager.ReactionChance += HandleReactionChance;
+        EventManager.ReactionEvent += HandleReactionEvent;
+    }
+
+    private void RemoveEventHandlers()
+    {
+        EventManager.ClickedTile -= HandleTileClicked;
+        EventManager.RightClickAttack -= HandleBasicAttack;
+        EventManager.FinishBasicMeeleAttack -= HandleFinishBasicAttack;
+        EventManager.MovingComplete -= HandleMovingComplete;
+        EventManager.AttackDamageGiven -= HandleAttackDamageGiven;
+        EventManager.ReactionChance -= HandleReactionChance;
+        EventManager.ReactionEvent -= HandleReactionEvent;
     }
 
     private void RegisterUIEventHandlers()
     {
         UIEventManager.EndTurnButtonClicked += HandleEndButtonClicked;
+    }
+
+    private void RemoveUIEventHandlers()
+    {
+        UIEventManager.EndTurnButtonClicked -= HandleEndButtonClicked;
     }
 
 
@@ -387,6 +441,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
     //}
     private void HandleEndButtonClicked()
     {
+        if (userControlOrchestrator.CurrentState != this) return;
+
         PlayerStatSheet playerStatSheet = activeCharacter.GetComponent<PlayerStatSheet>();
 
         playerStatSheet.movementPoints = 0;
@@ -453,8 +509,29 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         }
     }
 
+    private void HandleReactionChance()
+    {
+        float chance = 1f;
+
+        if (chance >= 0.5f)
+        {
+            EventManager.OnReactionEvent();
+        }
+    }
+
+    private void HandleReactionEvent()
+    {
+        inReactionState = true;
+        userControlOrchestrator.PushState(userControlOrchestrator.battle_Player_Reaction_State);
+    }
+
+
+
     private void HandleAttackDamageGiven()
     {
+        //pause game
+        
+
         //Debug.Log"HandleFinishBasicAttack RUNNING!! **************");
         if (characterPhase == ECharacterPhase.ATTACK)
         {

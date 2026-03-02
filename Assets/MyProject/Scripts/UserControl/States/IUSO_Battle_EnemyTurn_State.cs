@@ -52,6 +52,10 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         enemyAI.ExecuteTurn();
     }
 
+    public void SuspendState() { }
+    public void ResumeState() { }
+
+
     private void HandleAttackDamageGiven()
     {
         GameObject enemy = enemyAI.currentEnemy;

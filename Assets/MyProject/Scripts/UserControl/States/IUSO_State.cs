@@ -9,6 +9,8 @@ public interface IUSO_State
 {
     void EnterState(UserControlOrchestrator USO);
     void ExitState();
+    void SuspendState();
+    void ResumeState();
     public void Update();
     public void FixedUpdate();
     void DeleteCA(E_CA_Type type);

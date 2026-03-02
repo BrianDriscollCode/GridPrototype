@@ -53,5 +53,19 @@ public static class EventManager
         MoveEnemy?.Invoke();
     }
 
+    public static event UnityAction ReactionChance;
+
+    public static void OnReactionChance()
+    {
+        ReactionChance?.Invoke();
+    }
+
+    public static event UnityAction ReactionEvent;
+
+    public static void OnReactionEvent()
+    {
+        ReactionEvent?.Invoke();
+    }
+
     
 }

@@ -171,34 +171,29 @@ public class UserControlOrchestrator : MonoBehaviour
         CurrentState.EnterState(this);
     }
 
-    // Interrupt — preserves the state below
+    /// <summary>Interrupt — suspends current state without destroying it.</summary>
     public void PushState(IUSO_State state)
     {
-        CurrentState?.ExitState();
+        // Suspend the current state before pushing new one
+        if (CurrentState != null)
+        {
+            CurrentState.SuspendState();
+        }
+        
         stateStack.Push(state);
         CurrentState.EnterState(this);
     }
 
-    // End of interrupt — resume whatever was below
+    /// <summary>End of interrupt — resumes the state that was below.</summary>
     public void PopState()
     {
         CurrentState?.ExitState();
         stateStack.Pop();
-        CurrentState?.EnterState(this);
+        
+        // Resume the state that was below
+        if (CurrentState != null)
+        {
+            CurrentState.ResumeState();
+        }
     }
-    //public void PushState(IUSO_State state)
-    //{
-    //    CurrentState?.ExitState();
-    //    stateStack.Push(state);
-    //    CurrentState.EnterState(this);
-    //}
-
-    //// End of interrupt — resume whatever was below
-    //public void PopState()
-    //{
-    //    CurrentState?.ExitState();
-    //    stateStack.Pop();
-    //    CurrentState?.EnterState(this);
-    //}
-
 }

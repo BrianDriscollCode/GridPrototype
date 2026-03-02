@@ -11,4 +11,9 @@ public class BasicMeeleAttackEvent : MonoBehaviour
     {
         EventManager.OnAttackDamageGiven();
     }
+
+    public void EmitReactionChance()
+    {
+        EventManager.OnReactionChance();
+    }
 }
