@@ -10042,6 +10042,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridSystem
   characterPositionTrackerGO: {fileID: 1912538773}
   characterPositionTracker: {fileID: 1912538775}
+  availableTiles: []
   levelData: {fileID: 11400000, guid: 6a6d4ac0d78b47b4586630c8d3695674, type: 2}
   useLevelData: 1
   generate: 0
@@ -10050,6 +10051,9 @@ MonoBehaviour:
   cellSize: 2
   tilePrefab: {fileID: 173322531566783794, guid: 6e0d5907f1a074b4cbd6fc95db71b095, type: 3}
   prefabOffset: {x: 1, y: 0, z: 1}
+  tilesDebugList: []
+  highlightedMoveMaterial: {fileID: 2100000, guid: 1e24bb9cfb5630748887b5620bf2a9fc, type: 2}
+  highlightedAStarPathMaterial: {fileID: 2100000, guid: 946c533e8b0c3994dae253193bd26029, type: 2}
 --- !u!4 &685214080
 Transform:
   m_ObjectHideFlags: 0
@@ -14998,6 +15002,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea9982dae51d41b46af0348dca41aa28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PartyTracker
+  currentParty: 0
 --- !u!4 &1011214102
 Transform:
   m_ObjectHideFlags: 0
@@ -28499,7 +28504,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1788156504}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1f23768f7b24c09488dd37cb62f0d40b, type: 3}
   m_Name: 
@@ -28516,7 +28521,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1788156504}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6c4c1816b716c6489c0c84c8d57233e, type: 3}
   m_Name: 
@@ -28760,7 +28765,7 @@ MonoBehaviour:
   globalLoggingEnabled: 1
   categories:
   - categoryName: AI
-    enabled: 1
+    enabled: 0
   - categoryName: Player
     enabled: 0
   - categoryName: Grid
@@ -28768,11 +28773,11 @@ MonoBehaviour:
   - categoryName: UI
     enabled: 0
   - categoryName: Combat
-    enabled: 1
+    enabled: 0
   - categoryName: Debug
     enabled: 0
   - categoryName: Turn
-    enabled: 0
+    enabled: 1
   commonScripts: []
 --- !u!1 &1805050783
 GameObject:

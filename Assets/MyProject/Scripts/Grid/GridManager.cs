@@ -9,11 +9,12 @@ public class GridManager : MonoBehaviour
     public CharacterPositionTracker characterPositionTracker;
     public Dictionary<GameObject, Vector2Int> characterPositionList;
 
+    [Header("Tracking Available Tiles Per Character")]
+    public List<GameObject> availableTiles;
+
     [Header("Level Data")]
     public LevelScriptableObject levelData; // Reference to your scriptable object
     public bool useLevelData = false; // Toggle to use SO data vs manual settings
-
-
 
     [Header("Grid Settings")]
     public bool generate = true;
@@ -30,9 +31,34 @@ public class GridManager : MonoBehaviour
     // 2D array to store what's in each grid cell
     public GameObject[,] gridTiles;
 
+    [Header("Debug - Grid Visualization")]
+    [SerializeField] private List<TileDebugInfo> tilesDebugList = new List<TileDebugInfo>();
+
+    [Header("Tile Highlighting")]
+    [SerializeField] private HighlightGridTile highlightGridTile;
+    public Material highlightedMoveMaterial;
+    private Dictionary<GameObject, Material> _highlightedTileOriginalMaterials = new Dictionary<GameObject, Material>();
+    private List<GameObject> _currentlyHighlightedTiles = new List<GameObject>();
+
+    [Header("A* Tile Highlighting")]
+    public Material highlightedAStarPathMaterial;
+
+
+
+    [System.Serializable]
+    public class TileDebugInfo
+    {
+        public Vector2Int gridPosition;
+        public GameObject tile;
+    }
 
     void Start()
     {
+        if (highlightGridTile == null)
+            highlightGridTile = GetComponent<HighlightGridTile>() ?? gameObject.AddComponent<HighlightGridTile>();
+
+        //highlightGridTile = gameObject.AddComponent<HighlightGridTile>();
+        availableTiles = new List<GameObject>();
         //// Only run in Play mode to avoid issues when stopping the scene
         //if (!Application.isPlaying) return;
 
@@ -71,6 +97,32 @@ public class GridManager : MonoBehaviour
         {
             // If not generating, populate the array with existing tiles
             PopulateGridFromExistingTiles();
+        }
+
+        // Update debug visualization
+        UpdateDebugList();
+    }
+
+    // Update the inspector-visible debug list
+    private void UpdateDebugList()
+    {
+        tilesDebugList.Clear();
+
+        if (gridTiles == null) return;
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int z = 0; z < gridHeight; z++)
+            {
+                if (gridTiles[x, z] != null)
+                {
+                    tilesDebugList.Add(new TileDebugInfo
+                    {
+                        gridPosition = new Vector2Int(x, z),
+                        tile = gridTiles[x, z]
+                    });
+                }
+            }
         }
     }
 
@@ -114,6 +166,7 @@ public class GridManager : MonoBehaviour
         }
 
         //Debug.Log$"Populated gridTiles array with {foundTiles} existing tiles");
+        UpdateDebugList();
     }
 
     public bool IsTileAccessible(int col, int row)
@@ -141,6 +194,7 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
+        UpdateDebugList();
     }
 
     public void GenerateGrid()
@@ -161,6 +215,7 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
+        UpdateDebugList();
     }
 
     // Generate grid based on LevelScriptableObject data
@@ -245,6 +300,7 @@ public class GridManager : MonoBehaviour
         {
             Destroy(gridTiles[gridX, gridZ]);
             gridTiles[gridX, gridZ] = null;
+            UpdateDebugList();
         }
     }
 
@@ -315,6 +371,229 @@ public class GridManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    // ****** Path and Availability Management for Characters
+
+    public void CalculatePathToDestinationAndHighlight(Vector2Int characterPos, Vector2Int destinationPos)
+    {
+        List<Vector2Int> path = FindPathAStar(characterPos, destinationPos);
+        
+        if (path == null || path.Count == 0)
+        {
+            Debug.LogWarning($"No path found from {characterPos} to {destinationPos}");
+            return;
+        }
+
+        // Clear only path highlights (not movement range)
+        highlightGridTile.ClearHighlightsByType(HighlightGridTile.HighlightType.PathPreview);
+
+        // Highlight the path tiles
+        Color pathColor = new Color(0f, 1f, 0.5f, 1f); // Green for path
+        foreach (Vector2Int pos in path)
+        {
+            if (pos == characterPos) continue;
+            
+            GameObject tile = GetTile(pos.x, pos.y);
+            if (tile != null)
+            {
+                highlightGridTile.HighlightTile(tile, pathColor, HighlightGridTile.HighlightType.PathPreview);
+            }
+        }
+
+        Logger.LogCategory("Grid", $"Path found with {path.Count} steps");
+    }
+
+    /// <summary>
+    /// A* pathfinding implementation using Chebyshev distance for diagonal movement
+    /// </summary>
+    private List<Vector2Int> FindPathAStar(Vector2Int start, Vector2Int goal)
+    {
+        // Validate endpoints
+        if (!IsValidGridPosition(start.x, start.y) || !IsValidGridPosition(goal.x, goal.y))
+        {
+            return null;
+        }
+
+        if (!HasTileAt(goal.x, goal.y) || !IsTileAccessible(goal.x, goal.y))
+        {
+            return null;
+        }
+
+        // Data structures for A*
+        Dictionary<Vector2Int, int> gScore = new Dictionary<Vector2Int, int>();
+        Dictionary<Vector2Int, int> fScore = new Dictionary<Vector2Int, int>();
+        Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+        HashSet<Vector2Int> closedSet = new HashSet<Vector2Int>();
+        
+        // Priority queue (using sorted list as simple priority queue)
+        List<Vector2Int> openSet = new List<Vector2Int>();
+
+        // Initialize start node
+        gScore[start] = 0;
+        fScore[start] = GetTileDistance(start, goal); // Heuristic
+        openSet.Add(start);
+
+        // 8-directional movement (including diagonals)
+        Vector2Int[] directions = new Vector2Int[]
+        {
+            new Vector2Int(0, 1),   // North
+            new Vector2Int(1, 0),   // East
+            new Vector2Int(0, -1),  // South
+            new Vector2Int(-1, 0),  // West
+            new Vector2Int(1, 1),   // NE
+            new Vector2Int(1, -1),  // SE
+            new Vector2Int(-1, -1), // SW
+            new Vector2Int(-1, 1)   // NW
+        };
+
+        while (openSet.Count > 0)
+        {
+            // Find node with lowest fScore
+            Vector2Int current = openSet[0];
+            int lowestF = fScore.ContainsKey(current) ? fScore[current] : int.MaxValue;
+            
+            for (int i = 1; i < openSet.Count; i++)
+            {
+                int currentF = fScore.ContainsKey(openSet[i]) ? fScore[openSet[i]] : int.MaxValue;
+                if (currentF < lowestF)
+                {
+                    current = openSet[i];
+                    lowestF = currentF;
+                }
+            }
+
+            // Goal reached - reconstruct path
+            if (current == goal)
+            {
+                return ReconstructPath(cameFrom, current);
+            }
+
+            openSet.Remove(current);
+            closedSet.Add(current);
+
+            // Check all neighbors
+            foreach (Vector2Int dir in directions)
+            {
+                Vector2Int neighbor = current + dir;
+
+                // Skip if already evaluated
+                if (closedSet.Contains(neighbor))
+                    continue;
+
+                // Validate neighbor
+                if (!IsValidGridPosition(neighbor.x, neighbor.y))
+                    continue;
+                if (!HasTileAt(neighbor.x, neighbor.y))
+                    continue;
+                if (!IsTileAccessible(neighbor.x, neighbor.y))
+                    continue;
+                
+                // Allow pathfinding through occupied tiles (player can plan path)
+                // but you can uncomment this if you want to block occupied tiles
+                // if (neighbor != goal && IsGridPosOccupied(neighbor))
+                //     continue;
+
+                // Calculate tentative gScore (all moves cost 1 with Chebyshev)
+                int tentativeGScore = gScore[current] + 1;
+
+                // Add to open set if new
+                if (!openSet.Contains(neighbor))
+                {
+                    openSet.Add(neighbor);
+                }
+                else if (tentativeGScore >= (gScore.ContainsKey(neighbor) ? gScore[neighbor] : int.MaxValue))
+                {
+                    // Not a better path
+                    continue;
+                }
+
+                // This is the best path so far
+                cameFrom[neighbor] = current;
+                gScore[neighbor] = tentativeGScore;
+                fScore[neighbor] = tentativeGScore + GetTileDistance(neighbor, goal);
+            }
+        }
+
+        // No path found
+        return null;
+    }
+
+    /// <summary>
+    /// Reconstructs the path from start to goal using the cameFrom map
+    /// </summary>
+    private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
+    {
+        List<Vector2Int> path = new List<Vector2Int> { current };
+
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            path.Insert(0, current); // Insert at beginning to maintain order
+        }
+
+        return path;
+    }
+
+    public void CheckAvailableMoveTilesAndHighlight(int movePoints, Vector2Int characterPos)
+    {
+        Logger.LogCategory("Grid", "CheckAvailableMoveTilesAndHighlight");
+
+        // Clear highlighted tiles FIRST (restores materials while we still have references)
+        ClearHighlightedTiles();
+        
+        // Then clear the available tiles list
+        ClearAvailableTiles();
+
+        // Iterate through grid using nested loops (can't foreach a 2D array)
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int z = 0; z < gridHeight; z++)
+            {
+                // Skip if no tile exists
+                if (gridTiles[x, z] == null) continue;
+
+                Vector2Int tilePos = new Vector2Int(x, z);
+                
+                // Validation pipeline (same as EnemyAI)
+                if (!IsValidGridPosition(x, z)) continue;
+                if (!HasTileAt(x, z)) continue;
+                if (!IsTileAccessible(x, z)) continue;
+                if (IsGridPosOccupied(tilePos)) continue;
+                
+                // Check if tile is within movement range
+                if (GetTileDistance(characterPos, tilePos) <= movePoints)
+                {
+                    availableTiles.Add(gridTiles[x, z]);
+                }
+            }
+        }
+
+        // Highlight all available tiles
+        foreach (GameObject tile in availableTiles)
+        {
+            HighlightTile(tile);
+        }
+    }
+
+    private void HighlightTile(GameObject tile)
+    {
+        Color highlightColor = new Color(0.3f, 0.7f, 1f, 1f); // Blue for movement range
+        highlightGridTile.HighlightTile(tile, highlightColor, HighlightGridTile.HighlightType.MoveRange);
+    }
+
+    public void ClearAvailableTiles()
+    {
+        availableTiles.Clear();
+    }
+
+    public void ClearHighlightedTiles()
+    {
+        if (highlightGridTile != null)
+            highlightGridTile.ClearHighlightsByType(HighlightGridTile.HighlightType.MoveRange);
+
+        _currentlyHighlightedTiles.Clear();
+        _highlightedTileOriginalMaterials.Clear();
     }
 
     // Visualize the grid in the editor

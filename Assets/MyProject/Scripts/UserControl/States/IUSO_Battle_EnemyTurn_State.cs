@@ -63,7 +63,6 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
 
         playerStatSheet.health -= enemyStatSheet.strength;
         playerHealthBar.SetHealth(playerStatSheet.health, playerStatSheet.maxHealth);
-
     }
 
     private void HandleFinishAttack()
@@ -181,6 +180,7 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         {
             CA_BasicMeeleAttack = GO.AddComponent<CA_BasicMeeleAttack>();
             CA_BasicMeeleAttack.userControlOrchestrator = orchestrator;
+            CA_BasicMeeleAttack.enemyAI = enemyAI;
             CA_BasicMeeleAttack.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
             CA_BasicMeeleAttack.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
             CA_BasicMeeleAttack.input = input;

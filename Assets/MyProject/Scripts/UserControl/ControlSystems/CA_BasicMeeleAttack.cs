@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public class CA_BasicMeeleAttack : MonoBehaviour
 {
     public UserControlOrchestrator userControlOrchestrator;
+    public EnemyAI enemyAI;
     public PlayerClickControls playerControls;
     public PlayerAnim playerAnim;
     public InputSystem_Actions input;
@@ -20,6 +21,9 @@ public class CA_BasicMeeleAttack : MonoBehaviour
         CM_BasicMeeleAttack = new CM_BasicMeeleAttack();
         CM_BasicMeeleAttack.playerAnim = playerAnim;
         CM_BasicMeeleAttack.playerControls = playerControls;
+        CM_BasicMeeleAttack.userControlOrchestrator = userControlOrchestrator;
+        CM_BasicMeeleAttack.enemyAI = enemyAI;
+        CM_BasicMeeleAttack.rotationSpeed = rotationSpeed;
     }
 
     public void Action()
