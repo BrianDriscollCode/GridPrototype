@@ -98,7 +98,7 @@ public class TurnManager : MonoBehaviour
             {
                 userControlOrchestrator.selectedCharacter = nextPartyMember;
 
-                IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.userControlState as IUSO_Battle_PlayerTurn_State;
+                IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.CurrentState as IUSO_Battle_PlayerTurn_State;
 
                 if (battleState != null)
                 {
@@ -299,7 +299,7 @@ public class TurnManager : MonoBehaviour
             userControlOrchestrator.selectedCharacter = firstPlayer;
             userControlOrchestrator.SwitchState(userControlOrchestrator.battle_PlayerTurn_State);
 
-            IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.userControlState as IUSO_Battle_PlayerTurn_State;
+            IUSO_Battle_PlayerTurn_State battleState = userControlOrchestrator.CurrentState as IUSO_Battle_PlayerTurn_State;
             if (battleState != null)
             {
                 battleState.ResetState();

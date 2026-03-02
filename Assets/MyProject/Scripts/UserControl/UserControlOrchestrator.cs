@@ -16,9 +16,10 @@ public class UserControlOrchestrator : MonoBehaviour
     public GameObject target;
 
     [Header("State Management")]
-    public IUSO_State userControlState;
+    //public IUSO_State userControlState;
     public IUSO_State battle_PlayerTurn_State;
     public IUSO_State battle_EnemyTurn_State;
+    public IUSO_State battle_Player_Reaction_State;
 
     [Header("System References")]
     public Camera camera;
@@ -36,21 +37,29 @@ public class UserControlOrchestrator : MonoBehaviour
     private CharacterRegisterManager characterRegisterManager;
 
     private Stack<IUSO_State> stateStack = new Stack<IUSO_State>();
+    public IUSO_State CurrentState => stateStack.Count > 0 ? stateStack.Peek() : null;
 
-    public void PushState(IUSO_State state)
+    public struct ReactionContext
     {
-        userControlState?.ExitState();
-        stateStack.Push(userControlState);
-        userControlState = state;
-        userControlState?.EnterState(this);
+        public GameObject attacker;
+        public GameObject defender;
+        public bool defenderIsPlayer;
     }
 
-    public void PopState()
-    {
-        userControlState?.ExitState();
-        userControlState = stateStack.Count > 0 ? stateStack.Pop() : null;
-        userControlState?.EnterState(this); // re-enter so it resets CAs cleanly
-    }
+    //public void PushState(IUSO_State state)
+    //{
+    //    userControlState?.ExitState();
+    //    stateStack.Push(userControlState);
+    //    userControlState = state;
+    //    userControlState?.EnterState(this);
+    //}
+
+    //public void PopState()
+    //{
+    //    userControlState?.ExitState();
+    //    userControlState = stateStack.Count > 0 ? stateStack.Pop() : null;
+    //    userControlState?.EnterState(this); // re-enter so it resets CAs cleanly
+    //}
 
     public void Start()
     {
@@ -58,10 +67,11 @@ public class UserControlOrchestrator : MonoBehaviour
         InitializeRaycastSystem();
         InitializeStates();
         InitializeAI();
-        
-        
+
+
         // Start first turn
-        SwitchState(battle_PlayerTurn_State);
+        //SwitchState(battle_PlayerTurn_State);
+        PushState(battle_PlayerTurn_State);
     }
 
     private void InitializeManagers()
@@ -112,6 +122,7 @@ public class UserControlOrchestrator : MonoBehaviour
     {
         battle_PlayerTurn_State = new IUSO_Battle_PlayerTurn_State();
         battle_EnemyTurn_State = new IUSO_Battle_EnemyTurn_State();
+        battle_Player_Reaction_State = new IUSO_Battle_Player_Reaction_State();
     }
 
     private T FindManager<T>() where T : MonoBehaviour
@@ -122,21 +133,72 @@ public class UserControlOrchestrator : MonoBehaviour
         return managerObj?.GetComponent<T>();
     }
 
+    //public void Update()
+    //{
+    //    stateString = userControlState?.ToString() ?? "None";
+    //    userControlState?.Update();
+    //}
+
+    //public void FixedUpdate()
+    //{
+    //    userControlState?.FixedUpdate();
+    //}
     public void Update()
     {
-        stateString = userControlState?.ToString() ?? "None";
-        userControlState?.Update();
+        stateString = CurrentState?.ToString() ?? "None";
+        CurrentState?.Update();
     }
 
     public void FixedUpdate()
     {
-        userControlState?.FixedUpdate();
+        CurrentState?.FixedUpdate();
     }
 
+
+    //public void SwitchState(IUSO_State state)
+    //{
+    //    userControlState?.ExitState();
+    //    userControlState = state;
+    //    userControlState?.EnterState(this);
+    //}
+    // Full turn transition — clears the stack
     public void SwitchState(IUSO_State state)
     {
-        userControlState?.ExitState();
-        userControlState = state;
-        userControlState?.EnterState(this);
+        while (stateStack.Count > 0)
+            stateStack.Pop().ExitState();
+
+        stateStack.Push(state);
+        CurrentState.EnterState(this);
     }
+
+    // Interrupt — preserves the state below
+    public void PushState(IUSO_State state)
+    {
+        CurrentState?.ExitState();
+        stateStack.Push(state);
+        CurrentState.EnterState(this);
+    }
+
+    // End of interrupt — resume whatever was below
+    public void PopState()
+    {
+        CurrentState?.ExitState();
+        stateStack.Pop();
+        CurrentState?.EnterState(this);
+    }
+    //public void PushState(IUSO_State state)
+    //{
+    //    CurrentState?.ExitState();
+    //    stateStack.Push(state);
+    //    CurrentState.EnterState(this);
+    //}
+
+    //// End of interrupt — resume whatever was below
+    //public void PopState()
+    //{
+    //    CurrentState?.ExitState();
+    //    stateStack.Pop();
+    //    CurrentState?.EnterState(this);
+    //}
+
 }

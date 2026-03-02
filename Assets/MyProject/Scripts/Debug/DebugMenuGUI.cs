@@ -17,7 +17,7 @@ public class DebugMenuGUI : MonoBehaviour
         // Toggle with backquote `
         //if (Input.GetKeyDown(KeyCode.BackQuote))
         //    show = !show;
-        characterPhaseString = userControlOrchestrator.userControlState.GetStateInfo().characterPhase.ToString();
+        characterPhaseString = userControlOrchestrator.CurrentState.GetStateInfo().characterPhase.ToString();
         stateString = userControlOrchestrator.stateString;
     }
 
@@ -44,7 +44,7 @@ public class DebugMenuGUI : MonoBehaviour
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight, labelWidth, rowHeight), "CharacterPhase:");
         if (GUI.Button(new Rect(leftMargin + labelWidth, startY + rowHeight, valueWidth, rowHeight),
-            userControlOrchestrator.userControlState.GetStateInfo() != null ? characterPhaseString : "None"))
+            userControlOrchestrator.CurrentState.GetStateInfo() != null ? characterPhaseString : "None"))
             //Debug.Log"Current State clicked");
 
         GUI.Label(new Rect(leftMargin, startY + rowHeight * 2, labelWidth, rowHeight), "chracter Pos:");
@@ -110,7 +110,7 @@ public class DebugMenuGUI : MonoBehaviour
     {
         GUI.Label(new Rect(leftMargin, startY, labelWidth, rowHeight), "Control Actions:");
 
-        if (userControlOrchestrator.userControlState is IUSO_Battle_PlayerTurn_State battleState)
+        if (userControlOrchestrator.CurrentState is IUSO_Battle_PlayerTurn_State battleState)
         {
             List<MonoBehaviour> actions = battleState.GetAllControlActions();
 
@@ -139,7 +139,7 @@ public class DebugMenuGUI : MonoBehaviour
 
     private int GetControlActionsCount()
     {
-        if (userControlOrchestrator.userControlState is IUSO_Battle_PlayerTurn_State battleState)
+        if (userControlOrchestrator.CurrentState is IUSO_Battle_PlayerTurn_State battleState)
         {
             List<MonoBehaviour> actions = battleState.GetAllControlActions();
             return actions != null ? actions.Count : 0;
@@ -149,7 +149,7 @@ public class DebugMenuGUI : MonoBehaviour
 
     private string GetControlActionsString()
     {
-        if (userControlOrchestrator.userControlState is IUSO_Battle_PlayerTurn_State battleState)
+        if (userControlOrchestrator.CurrentState is IUSO_Battle_PlayerTurn_State battleState)
         {
             List<MonoBehaviour> actions = battleState.GetAllControlActions();
             if (actions == null || actions.Count == 0)

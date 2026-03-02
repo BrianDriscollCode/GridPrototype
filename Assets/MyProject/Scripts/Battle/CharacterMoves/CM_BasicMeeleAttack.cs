@@ -27,7 +27,7 @@ public class CM_BasicMeeleAttack
         GameObject attacker;
         GameObject target;
 
-        if (userControlOrchestrator.userControlState is IUSO_Battle_EnemyTurn_State)
+        if (userControlOrchestrator.CurrentState is IUSO_Battle_EnemyTurn_State)
         {
             attacker = enemyAI.currentEnemy;
             target = enemyAI.currentTarget;

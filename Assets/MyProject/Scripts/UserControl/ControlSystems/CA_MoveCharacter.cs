@@ -70,20 +70,20 @@ public class CA_MoveCharacter : MonoBehaviour
 
 
         // *** This should be handled in player battle state with OnMovingComplete event
-        if (userControlOrchestrator.userControlState == userControlOrchestrator.battle_PlayerTurn_State)
+        if (userControlOrchestrator.CurrentState == userControlOrchestrator.battle_PlayerTurn_State)
         {
-            userControlOrchestrator.userControlState.SetCharacterPhase(ECharacterPhase.IDLE);
+            userControlOrchestrator.CurrentState.SetCharacterPhase(ECharacterPhase.IDLE);
             userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");
             EventManager.OnMovingComplete();
         }
-        else if (userControlOrchestrator.userControlState == userControlOrchestrator.battle_EnemyTurn_State)
+        else if (userControlOrchestrator.CurrentState == userControlOrchestrator.battle_EnemyTurn_State)
         {
             EventManager.OnMovingComplete();
         }
 
         //Check for if enemy or player
 
-        IUSO_State orchestratorState = userControlOrchestrator.userControlState;
+        IUSO_State orchestratorState = userControlOrchestrator.CurrentState;
 
         // Orchestration: Check turn completion
         //if (turnManager != null)
