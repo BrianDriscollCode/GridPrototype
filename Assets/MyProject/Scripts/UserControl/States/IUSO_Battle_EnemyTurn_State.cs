@@ -21,8 +21,11 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     private InputSystem_Actions input;
     private TurnManager turnManager;
     private PartyTracker partyTracker;
+
+    private bool inReactionState;
     public void EnterState(UserControlOrchestrator UCO)
     {
+        inReactionState = false;
         allControlActions = new List<MonoBehaviour>();
         orchestrator = UCO;
         enemyAI = UCO.enemyAI;  // Get AI from orchestrator
@@ -37,6 +40,8 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         EventManager.MovingComplete += HandleFinishMoving;
         EventManager.FinishBasicMeeleAttack += HandleFinishAttack;
         EventManager.AttackDamageGiven += HandleAttackDamageGiven;
+        EventManager.ReactionChance += HandleReactionChance;
+        EventManager.ReactionEvent += HandleReactionEvent;
 
         //Debug.Log"=== ENEMY TURN START ===");
 
@@ -52,9 +57,50 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         enemyAI.ExecuteTurn();
     }
 
-    public void SuspendState() { }
-    public void ResumeState() { }
+    public void SuspendState()
+    {
+        if (enemyAI.currentEnemy)
+        {
+            PlayerAnim enemyAnim = enemyAI.currentEnemy.GetComponent<PlayerAnim>();
 
+            if (enemyAnim != null && enemyAnim.playerAnimator != null)
+            {
+                enemyAnim.playerAnimator.speed = 0f;
+            }
+        }
+        else
+        {
+            Debug.Log("enemyAI.currentEnemy = " + enemyAI.currentEnemy);
+        }
+    }
+    public void ResumeState()
+    {
+
+        if (enemyAI.currentEnemy)
+        {
+            PlayerAnim enemyAnim = enemyAI.currentEnemy.GetComponent<PlayerAnim>();
+            if (enemyAnim != null && enemyAnim.playerAnimator != null)
+            {
+                enemyAnim.playerAnimator.speed = 1f;
+            }
+        }
+    }
+
+    private void HandleReactionChance()
+    {
+        float chance = 1f;
+
+        if (chance >= 0.5f)
+        {
+            EventManager.OnReactionEvent();
+        }
+    }
+
+    private void HandleReactionEvent()
+    {
+        inReactionState = true;
+        orchestrator.PushState(orchestrator.battle_Player_Reaction_State);
+    }
 
     private void HandleAttackDamageGiven()
     {
@@ -130,6 +176,8 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         EventManager.MovingComplete -= HandleFinishMoving;
         EventManager.FinishBasicMeeleAttack -= HandleFinishAttack;
         EventManager.AttackDamageGiven -= HandleAttackDamageGiven;
+        EventManager.ReactionChance -= HandleReactionChance;
+        EventManager.ReactionEvent -= HandleReactionEvent;
         //Debug.Log"=== ENEMY TURN END ===");
     }
 

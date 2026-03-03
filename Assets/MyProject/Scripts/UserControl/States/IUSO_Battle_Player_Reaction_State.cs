@@ -5,28 +5,41 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
 {
     private UserControlOrchestrator userControlOrchestrator;
     private InputSystem_Actions input;
+    private EnemyAI enemyAI;
 
     public void EnterState(UserControlOrchestrator USO)
     {
         userControlOrchestrator = USO;
         input = userControlOrchestrator.input;
+        enemyAI = userControlOrchestrator.enemyAI;
         
         // TODO: Initialize reaction-specific control actions
         // e.g., CA_ReactionChoice, CA_CounterAttack, etc.
     }
 
-    public void SuspendState() { }
-    public void ResumeState() { }
+    public void SuspendState() 
+    {
+    }
+    public void ResumeState() 
+    { 
+
+    }
 
     public void ExitState()
     {
         // No animator manipulation here — PlayerTurn.ResumeState() handles it
-        userControlOrchestrator = null;
+        //userControlOrchestrator = null;
     }
 
     public void Update()
     {
-        // TODO: Handle reaction input per frame
+        // Guard against null input
+        if (input == null)
+        {
+            input = userControlOrchestrator.input;
+            Debug.LogError("Input is null in Reaction State Update!");
+        }
+            
         if (input.Player.Exit.WasPressedThisFrame())
         {
             userControlOrchestrator.PopState();
@@ -36,7 +49,7 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
     public void FixedUpdate()
     {
         // TODO: Handle reaction physics/state updates
-        Debug.Log("RUNNING REACTION");
+        //Debug.Log("RUNNING REACTION");
 
         
     }

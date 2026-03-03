@@ -51,7 +51,6 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         allControlActions = new List<MonoBehaviour>();
         userControlOrchestrator = USO;
 
-
         RegisterEventHandlers();
         RegisterUIEventHandlers();
 
@@ -83,7 +82,6 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
             
         }
-
 
         interfaceRaycastSelection = userControlOrchestrator.interfaceRaycastSelection;
         characterPhase = ECharacterPhase.IDLE;
