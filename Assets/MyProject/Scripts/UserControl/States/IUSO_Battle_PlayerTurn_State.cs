@@ -41,6 +41,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private PartyTracker partyTracker;
 
+    private PlayerStateHelper playerStateHelper;
+
     private bool inReactionState;
 
     private string pausedAnimationName;
@@ -48,6 +50,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     public void EnterState(UserControlOrchestrator USO)
     {
+        playerStateHelper = new PlayerStateHelper();
         allControlActions = new List<MonoBehaviour>();
         userControlOrchestrator = USO;
 
@@ -89,7 +92,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
         InitialiazeControlActions();
 
-        CheckAvailableTilesHelper();
+        playerStateHelper.CheckAvailableTilesHelper(userControlOrchestrator.selectedCharacter, gridManager);
     }
 
     public void ExitState()
@@ -105,6 +108,12 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         DestroyComponent(CA_IdleCharacter);
         DestroyComponent(CA_SelectCharacterWithClick);
         DestroyComponent(CA_BasicMeeleAttack);
+
+        // Clean up helpers
+        if (playerStateHelper != null)
+        {
+            playerStateHelper = null;
+        }
 
         // Clear references
         interfaceRaycastSelection = null; // only ref no component - this is good
@@ -213,7 +222,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
     {
         DestroyMultipleControlActions(allControlActions);
         InitialiazeControlActions();
-        CheckAvailableTilesHelper();
+        playerStateHelper.CheckAvailableTilesHelper(userControlOrchestrator.selectedCharacter, gridManager);
     }
 
     public List<MonoBehaviour> GetAllControlActions()
@@ -520,7 +529,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
     private void HandleReactionEvent()
     {
         inReactionState = true;
-        userControlOrchestrator.PushState(userControlOrchestrator.battle_Player_Reaction_State);
+        userControlOrchestrator.PushState(userControlOrchestrator.battle_Enemy_Reaction_State);
     }
 
 
@@ -588,7 +597,7 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
             PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
             //characterPhase = ECharacterPhase.IDLE;
 
-            CheckAvailableTilesHelper();
+            playerStateHelper.CheckAvailableTilesHelper(userControlOrchestrator.selectedCharacter, gridManager);
             // *** State May Switch
             turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
             
@@ -599,15 +608,15 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         }    
     }
 
-    private void CheckAvailableTilesHelper()
-    {
-        // highlight available moves
-        GameObject character = userControlOrchestrator.selectedCharacter;
-        int characterMovePoints = character.GetComponent<PlayerStatSheet>().movementPoints;
-        Vector2Int characterGridPos = gridManager.WorldToGridPosition(character.GetComponent<EntityGridLocation>().pos);
+    //private void CheckAvailableTilesHelper()
+    //{
+    //    // highlight available moves
+    //    GameObject character = userControlOrchestrator.selectedCharacter;
+    //    int characterMovePoints = character.GetComponent<PlayerStatSheet>().movementPoints;
+    //    Vector2Int characterGridPos = gridManager.WorldToGridPosition(character.GetComponent<EntityGridLocation>().pos);
 
-        gridManager.CheckAvailableMoveTilesAndHighlight(characterMovePoints, characterGridPos);
-    }
+    //    gridManager.CheckAvailableMoveTilesAndHighlight(characterMovePoints, characterGridPos);
+    //}
 }
 
 // Helpers

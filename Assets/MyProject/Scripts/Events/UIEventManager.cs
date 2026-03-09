@@ -11,4 +11,11 @@ public static class UIEventManager
         EndTurnButtonClicked?.Invoke();
     }
 
+    public static event UnityAction MoveButtonClicked;
+
+    public static void OnMoveButtonClicked()
+    {
+        MoveButtonClicked?.Invoke();
+    }
+
 }

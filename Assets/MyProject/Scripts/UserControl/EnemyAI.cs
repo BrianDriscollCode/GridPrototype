@@ -217,6 +217,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    
     public GameObject ChooseBestMoveTile()
     {
         List<GameObject> availableTiles = FindReachableTilesNearTarget();
@@ -280,6 +281,7 @@ public class EnemyAI : MonoBehaviour
 
     public List<GameObject> FindReachableTilesNearTarget()
     {
+
         List<GameObject> availableTiles = new List<GameObject>();
 
         if (currentEnemy == null || currentTarget == null ||

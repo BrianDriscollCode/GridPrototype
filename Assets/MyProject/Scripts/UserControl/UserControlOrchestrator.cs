@@ -20,6 +20,7 @@ public class UserControlOrchestrator : MonoBehaviour
     public IUSO_State battle_PlayerTurn_State;
     public IUSO_State battle_EnemyTurn_State;
     public IUSO_State battle_Player_Reaction_State;
+    public IUSO_State battle_Enemy_Reaction_State;
 
     [Header("System References")]
     public Camera camera;
@@ -123,6 +124,7 @@ public class UserControlOrchestrator : MonoBehaviour
         battle_PlayerTurn_State = new IUSO_Battle_PlayerTurn_State();
         battle_EnemyTurn_State = new IUSO_Battle_EnemyTurn_State();
         battle_Player_Reaction_State = new IUSO_Battle_Player_Reaction_State();
+        battle_Enemy_Reaction_State = new IUSO_Battle_Enemy_Reaction_State();
     }
 
     private T FindManager<T>() where T : MonoBehaviour
