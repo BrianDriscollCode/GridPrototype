@@ -70,7 +70,7 @@ public class CA_MoveCharacter : MonoBehaviour
 
 
         // *** This should be handled in player battle state with OnMovingComplete event
-        if (userControlOrchestrator.CurrentState == userControlOrchestrator.battle_PlayerTurn_State)
+        if (userControlOrchestrator.CurrentState == userControlOrchestrator.battle_PlayerTurn_State || userControlOrchestrator.CurrentState == userControlOrchestrator.battle_Player_Reaction_State)
         {
             userControlOrchestrator.CurrentState.SetCharacterPhase(ECharacterPhase.IDLE);
             userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");

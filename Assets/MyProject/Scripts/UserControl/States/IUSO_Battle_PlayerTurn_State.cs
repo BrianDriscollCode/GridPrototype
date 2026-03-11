@@ -116,13 +116,13 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         }
 
         // Clear references
-        interfaceRaycastSelection = null; // only ref no component - this is good
-        CA_HoverTileSelection = null;
-        CA_HoverCharacter = null;
-        CA_MoveCharacter = null;
-        CA_SelectTileWithClick = null;
-        CA_IdleCharacter = null;
-        CA_SelectCharacterWithClick = null;
+        //interfaceRaycastSelection = null; // only ref no component - this is good
+        //CA_HoverTileSelection = null;
+        //CA_HoverCharacter = null;
+        //CA_MoveCharacter = null;
+        //CA_SelectTileWithClick = null;
+        //CA_IdleCharacter = null;
+        //CA_SelectCharacterWithClick = null;
 
         gridManager.GetComponent<HighlightGridTile>().ClearAllHighlights();
     }
@@ -463,6 +463,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private void HandleTileClicked(Vector2Int clickedGridPos)
     {
+        Debug.Log("HandleTileClicked IN BLATTLE PLAYER STATE");
+
         if (characterPhase != ECharacterPhase.IDLE)
             return;
 

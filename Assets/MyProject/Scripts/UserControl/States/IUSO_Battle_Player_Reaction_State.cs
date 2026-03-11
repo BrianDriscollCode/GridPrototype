@@ -9,6 +9,7 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
     private EnemyAI enemyAI;
     private InterfaceRaycastSelection interfaceRaycastSelection;
     private ECharacterPhase characterPhase;
+    private GameObject targetCharacter;
 
     private CA_IdleCharacter CA_IdleCharacter;
     private CA_MoveCharacter CA_MoveCharacter;
@@ -21,6 +22,11 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
 
     private PlayerStateHelper playerStateHelper;
 
+    private MovementPointsManager movementPointsManager;
+    private GridManager gridManager;
+    private TurnManager turnManager;
+    private PartyTracker partyTracker;
+
 
     public void EnterState(UserControlOrchestrator USO)
     {
@@ -30,14 +36,43 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
         userControlOrchestrator = USO;
         input = userControlOrchestrator.input;
         enemyAI = userControlOrchestrator.enemyAI;
+        targetCharacter = enemyAI.currentTarget;
         interfaceRaycastSelection = userControlOrchestrator.interfaceRaycastSelection;
         UIEventManager.MoveButtonClicked += HandleMoveButtonClicked;
+
+        ManagerRegistry managerRegistry = GameObject.FindAnyObjectByType<ManagerRegistry>();
+
+        if (managerRegistry != null)
+        {
+            GameObject managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<MovementPointsManager>() != null);
+            if (managerObj != null)
+            {
+                movementPointsManager = managerObj.GetComponent<MovementPointsManager>();
+            }
+            managerObj = null;
+
+
+            managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<GridManager>() != null);
+            if (managerObj != null)
+            {
+                gridManager = managerObj.GetComponent<GridManager>();
+            }
+
+            managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<TurnManager>() != null);
+            if (managerObj != null)
+            {
+                turnManager = managerObj.GetComponent<TurnManager>();
+                partyTracker = turnManager.GetPartyTracker();
+                partyTracker.SetCurrentParty(PartyTracker.EWhosParty.PLAYER);
+            }
+
+
+        }
 
         CreateCA(E_CA_Type.IDLE_CHARACTER);
         CreateCA(E_CA_Type.MOVE_CHARACTER);
         CreateCA(E_CA_Type.HOVER_TILE_SELECTION);
         CreateCA(E_CA_Type.HOVER_CHARACTER);
-        CreateCA(E_CA_Type.MOVE_CHARACTER);
         enemyAI.currentTarget.GetComponent<PlayerAnim>().IdleAnimation();
 
         CreateCA(E_CA_Type.SELECT_TILE_WITH_CLICK);
@@ -49,7 +84,7 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
         // e.g., CA_ReactionChoice, CA_CounterAttack, etc.
 
         playerStateHelper.CheckAvailableTilesHelper(enemyAI.currentTarget, USO.gridManager, true);
-
+        RegisterEventHandlers();
         
     }
 
@@ -63,17 +98,34 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
 
     public void ExitState()
     {
+        // Unsubscribe from all events
         UIEventManager.MoveButtonClicked -= HandleMoveButtonClicked;
- 
+        EventManager.ClickedTile -= HandleTileClicked;
+        EventManager.MovingComplete -= HandleMovingComplete;
+        
+        // Clean up helpers
         if (playerStateHelper != null)
         {
             playerStateHelper = null;
         }
         
-        // Clear references
+        // Destroy control actions
+        DestroyComponent(CA_HoverTileSelection);
+        DestroyComponent(CA_HoverCharacter);
+        DestroyComponent(CA_MoveCharacter);
+        DestroyComponent(CA_SelectTileWithClick);
+        DestroyComponent(CA_IdleCharacter);
+        DestroyComponent(CA_SelectCharacterWithClick);
+        DestroyComponent(CA_BasicMeeleAttack);
+        
+        // Clear references to prevent stale access
         input = null;
         enemyAI = null;
         userControlOrchestrator = null;
+        gridManager = null;
+        movementPointsManager = null;
+        
+        Logger.LogCategory("Turn", "Reaction State - Exited and cleaned up");
     }
 
     public void Update()
@@ -155,7 +207,7 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
     private void CreateCA(E_CA_Type type)
     {
         GameObject GO = userControlOrchestrator.gameObject;
-        GameObject selectedCharacter = userControlOrchestrator.selectedCharacter;
+        GameObject selectedCharacter = enemyAI.currentTarget;
 
 
         if (type == E_CA_Type.BASIC_MEELE_ATTACK)
@@ -195,6 +247,101 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
             CA_SelectCharacterWithClick.interfaceRaycastSelection = interfaceRaycastSelection;
             CA_SelectCharacterWithClick.input = input;
             allControlActions.Add(CA_SelectCharacterWithClick);
+        }
+        else if (type == E_CA_Type.MOVE_CHARACTER)
+        {
+            CA_MoveCharacter = GO.AddComponent<CA_MoveCharacter>();
+            CA_MoveCharacter.userControlOrchestrator = userControlOrchestrator;
+            CA_MoveCharacter.playerControls = enemyAI.currentTarget.GetComponent<PlayerClickControls>();
+            CA_MoveCharacter.playerAnim = enemyAI.currentTarget.GetComponent<PlayerAnim>();
+            allControlActions.Add(CA_MoveCharacter);
+        }
+        else if (type == E_CA_Type.IDLE_CHARACTER)
+        {
+            CA_IdleCharacter = GO.AddComponent<CA_IdleCharacter>();
+            CA_IdleCharacter.userControlOrchestrator = userControlOrchestrator;
+            CA_IdleCharacter.playerControls = enemyAI.currentTarget.GetComponent<PlayerClickControls>();
+            CA_IdleCharacter.playerAnim = enemyAI.currentTarget.GetComponent<PlayerAnim>();
+            allControlActions.Add(CA_IdleCharacter);
+        }
+    }
+
+    private void RegisterEventHandlers()
+    {
+        EventManager.ClickedTile += HandleTileClicked;
+        EventManager.MovingComplete += HandleMovingComplete;
+        
+        Logger.LogCategory("Turn", "Reaction State - Registered event handlers");
+    }
+
+    private void HandleTileClicked(Vector2Int clickedGridPos)
+    {
+        Logger.LogCategory("Turn", "HandleTileClicked Heard");
+
+        if (characterPhase != ECharacterPhase.IDLE)
+            return;
+
+        List<GameObject> characterList = movementPointsManager.characters;
+        GameObject matchingCharacter = characterList.Find(obj => obj == targetCharacter);
+        
+        if (matchingCharacter == null)
+        {
+            Logger.LogCategory("Turn", "ERROR: No matching character found!");
+            return;
+        }
+
+        Vector2Int characterOriginalPos = gridManager.WorldToGridPosition(matchingCharacter.transform.position);
+        PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
+
+        if (playerStatSheet == null)
+        {
+            Logger.LogCategory("Turn", "ERROR: PlayerStatSheet is null!");
+            return;
+        }
+
+        int distance = gridManager.GetTileDistance(characterOriginalPos, clickedGridPos);
+        int availableMovement = Mathf.RoundToInt(playerStatSheet.movementPoints / 2f);
+
+        // Validate movement
+        if (distance <= availableMovement && distance > 0)
+        {
+            // PlayerClickControls will automatically handle fromPos/toPos via its own listener
+            // Just update game state
+            playerStatSheet.movementPoints -= distance;
+            characterPhase = ECharacterPhase.MOVE;
+            
+            Logger.LogCategory("Turn", "Movement phase activated!");
+        }
+        else
+        {
+            Logger.LogCategory("Turn", $"Movement blocked: distance {distance}, available {availableMovement}");
+        }
+    }
+
+    private void HandleMovingComplete()
+    {
+        Debug.Log("HandleMovingcomplete RUNNING!! **************");
+
+        List<GameObject> characterList = movementPointsManager.characters;
+        GameObject matchingCharacter = characterList.Find(obj => obj == targetCharacter);
+
+        if (matchingCharacter != null)
+        {
+            Logger.LogCategory("Grid", "HandleMovingComplete - Character Match");
+            PlayerStatSheet playerStatSheet = matchingCharacter.GetComponent<PlayerStatSheet>();
+            //characterPhase = ECharacterPhase.IDLE;
+
+            //playerStateHelper.CheckAvailableTilesHelper(targetCharacter, gridManager);
+            gridManager.ClearAvailableTiles();
+            //Ending turn
+            userControlOrchestrator.PopState();
+            // *** State May Switch
+            //turnManager.CheckIfTurnComplete(playerStatSheet, userControlOrchestrator);
+
+        }
+        else
+        {
+            Logger.LogCategory("Grid", "HandleMovingComplete - No Match");
         }
     }
 }
