@@ -39,6 +39,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     private TurnManager turnManager;
 
+    private UIManager uiManager;
+
     private PartyTracker partyTracker;
 
     private PlayerStateHelper playerStateHelper;
@@ -83,12 +85,19 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
                 partyTracker.SetCurrentParty(PartyTracker.EWhosParty.PLAYER);
             }
 
+            managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<UIManager>() != null);
+            if (managerObj != null)
+            {
+                uiManager = managerObj.GetComponent<UIManager>();
+            }
             
         }
 
         interfaceRaycastSelection = userControlOrchestrator.interfaceRaycastSelection;
         characterPhase = ECharacterPhase.IDLE;
         input = userControlOrchestrator.input;
+
+        uiManager.SetCanvasActive(UIManager.EUICanvasSection.PLAYERTURN);
 
         InitialiazeControlActions();
 
@@ -97,6 +106,8 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
 
     public void ExitState()
     {
+        uiManager.SetCanvasInactive(UIManager.EUICanvasSection.PLAYERTURN);
+
         RemoveEventHandlers();
         RemoveUIEventHandlers();
 
@@ -116,13 +127,13 @@ public class IUSO_Battle_PlayerTurn_State : IUSO_State
         }
 
         // Clear references
-        //interfaceRaycastSelection = null; // only ref no component - this is good
-        //CA_HoverTileSelection = null;
-        //CA_HoverCharacter = null;
-        //CA_MoveCharacter = null;
-        //CA_SelectTileWithClick = null;
-        //CA_IdleCharacter = null;
-        //CA_SelectCharacterWithClick = null;
+        interfaceRaycastSelection = null; // only ref no component - this is good
+        CA_HoverTileSelection = null;
+        CA_HoverCharacter = null;
+        CA_MoveCharacter = null;
+        CA_SelectTileWithClick = null;
+        CA_IdleCharacter = null;
+        CA_SelectCharacterWithClick = null;
 
         gridManager.GetComponent<HighlightGridTile>().ClearAllHighlights();
     }

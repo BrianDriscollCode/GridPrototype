@@ -6,7 +6,7 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
 {
     private UserControlOrchestrator userControlOrchestrator;
     private InputSystem_Actions input;
-    private EnemyAI enemyAI;
+    public EnemyAI enemyAI;
     private InterfaceRaycastSelection interfaceRaycastSelection;
     private ECharacterPhase characterPhase;
     private GameObject targetCharacter;
@@ -25,6 +25,7 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
     private MovementPointsManager movementPointsManager;
     private GridManager gridManager;
     private TurnManager turnManager;
+    private UIManager uiManager;
     private PartyTracker partyTracker;
 
 
@@ -66,8 +67,14 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
                 partyTracker.SetCurrentParty(PartyTracker.EWhosParty.PLAYER);
             }
 
-
+            managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<UIManager>() != null);
+            if (managerObj != null)
+            {
+                uiManager = managerObj.GetComponent<UIManager>();
+            }
         }
+
+        uiManager.SetCanvasActive(UIManager.EUICanvasSection.PLAYERREACT);
 
         CreateCA(E_CA_Type.IDLE_CHARACTER);
         CreateCA(E_CA_Type.MOVE_CHARACTER);
@@ -98,6 +105,8 @@ public class IUSO_Battle_Player_Reaction_State : IUSO_State
 
     public void ExitState()
     {
+        uiManager.SetCanvasInactive(UIManager.EUICanvasSection.PLAYERREACT);
+
         // Unsubscribe from all events
         UIEventManager.MoveButtonClicked -= HandleMoveButtonClicked;
         EventManager.ClickedTile -= HandleTileClicked;

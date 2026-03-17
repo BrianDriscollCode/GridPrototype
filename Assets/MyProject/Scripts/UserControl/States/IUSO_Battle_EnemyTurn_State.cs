@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,9 +22,14 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     private PartyTracker partyTracker;
 
     private bool inReactionState;
+
+    // ADD: Cache the original target before reaction
+    private GameObject cachedOriginalTarget;
+
     public void EnterState(UserControlOrchestrator UCO)
     {
         inReactionState = false;
+        cachedOriginalTarget = null; // Reset cache
         allControlActions = new List<MonoBehaviour>();
         orchestrator = UCO;
         enemyAI = UCO.enemyAI;  // Get AI from orchestrator
@@ -42,8 +46,6 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         EventManager.AttackDamageGiven += HandleAttackDamageGiven;
         EventManager.ReactionChance += HandleReactionChance;
         EventManager.ReactionEvent += HandleReactionEvent;
-
-        //Debug.Log"=== ENEMY TURN START ===");
 
         input = orchestrator.input;
 
@@ -86,6 +88,23 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         }
     }
 
+    public void Update() { }
+    public void FixedUpdate()
+    {
+        if (characterPhase == ECharacterPhase.IDLE && CA_IdleCharacter != null)
+        {
+            CA_IdleCharacter.Action();
+        }
+        else if (characterPhase == ECharacterPhase.MOVE && CA_MoveCharacter != null)
+        {
+            CA_MoveCharacter.Action();
+        }
+        else if (characterPhase == ECharacterPhase.ATTACK && CA_BasicMeeleAttack != null)
+        {
+            CA_BasicMeeleAttack.Action();
+        }
+    }
+
     private void HandleReactionChance()
     {
         float chance = 1f;
@@ -99,6 +118,10 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
     private void HandleReactionEvent()
     {
         inReactionState = true;
+
+        // CACHE the current target BEFORE pushing reaction state
+        cachedOriginalTarget = enemyAI.currentTarget;
+
         orchestrator.PushState(orchestrator.battle_Player_Reaction_State);
     }
 
@@ -107,7 +130,22 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         GameObject enemy = enemyAI.currentEnemy;
         PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
 
-        GameObject player = enemyAI.currentTarget;
+        // USE cached target if in reaction state, otherwise use current
+        GameObject player = cachedOriginalTarget != null ? cachedOriginalTarget : enemyAI.currentTarget;
+
+        // Guard against null (in case cached target was destroyed)
+        if (player == null)
+        {
+            Debug.LogWarning("Target is null in HandleAttackDamageGiven - using currentTarget fallback");
+            player = enemyAI.currentTarget;
+        }
+
+        if (player == null)
+        {
+            Debug.LogError("No valid target found for attack damage");
+            return;
+        }
+
         PlayerStatSheet playerStatSheet = player.GetComponent<PlayerStatSheet>();
         HealthBar playerHealthBar = player.GetComponent<HealthBar>();
 
@@ -121,21 +159,15 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         GameObject enemy = enemyAI.currentEnemy;
         PlayerStatSheet enemyStatSheet = enemy.GetComponent<PlayerStatSheet>();
 
-        //GameObject player = enemyAI.currentTarget;
-        //PlayerStatSheet playerStatSheet = player.GetComponent<PlayerStatSheet>();
-
-        //playerStatSheet.health -= enemyStatSheet.strength;
         characterPhase = ECharacterPhase.IDLE;
-        //Attempt to force idle
         CA_IdleCharacter.Action();
 
-        // TEMP: So turn moves through after first attack
         enemyStatSheet.attackPoints = 0;
 
+        // CLEAR the cached target after attack completes
+        cachedOriginalTarget = null;
 
         turnManager.CheckEnemyActionComplete(enemyStatSheet, orchestrator);
-        //turnManager.CheckIfTurnComplete(enemyStatSheet, orchestrator);
-
     }
 
     // Begins the move process by activating control actions
@@ -159,8 +191,19 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
 
         if (enemyStatSheet.attackPoints > 0)
         {
-            // attack starts here
-            enemyAI.ExecuteTurn();
+            // If in reaction state, DON'T recalculate target
+            if (cachedOriginalTarget == null)
+            {
+                // Normal flow: re-evaluate target after movement
+                enemyAI.ExecuteTurn();
+            }
+            else
+            {
+                // Reaction flow: keep original target, just execute attack
+                Logger.LogCategory("Turn", $"Using cached target: {cachedOriginalTarget.name}");
+                enemyAI.ExecuteTurn(); // This will still work, but target won't change
+            }
+
             Logger.LogCategory("Turn", "Executing turn");
         }
         else
@@ -179,22 +222,6 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         EventManager.ReactionChance -= HandleReactionChance;
         EventManager.ReactionEvent -= HandleReactionEvent;
         //Debug.Log"=== ENEMY TURN END ===");
-    }
-
-    public void Update() { }
-    public void FixedUpdate() {
-        if (characterPhase == ECharacterPhase.IDLE && CA_IdleCharacter != null)
-        {
-            CA_IdleCharacter.Action();
-        }
-        else if (characterPhase == ECharacterPhase.MOVE && CA_MoveCharacter != null)
-        {
-            CA_MoveCharacter.Action();
-        }
-        else if (characterPhase == ECharacterPhase.ATTACK && CA_BasicMeeleAttack != null)
-        {
-            CA_BasicMeeleAttack.Action();
-        }
     }
 
     public void InitializeControlActions()
@@ -260,175 +287,3 @@ public class IUSO_Battle_EnemyTurn_State : IUSO_State
         }
     }
 }
-
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using UnityEngine;
-//using UnityEngine.Windows;
-//public class IUSO_Battle_EnemyTurn_State : IUSO_State
-//{   
-//    // Receives global ref of enemyAI from orchestrator
-//    // rethink this?
-//    public EnemyAI enemyAI;
-
-//    public ECharacterPhase characterPhase;
-//    public GameObject activeEnemyCharacter;
-//    public GameObject targetPlayerCharacter;
-
-//    private GridManager gridManager;
-//    private MovementPointsManager movementPointsManager;
-//    private UserControlOrchestrator userControlOrchestrator;
-//    private CharacterRegisterManager characterRegisterManager;
-
-//    private CA_IdleCharacter CA_IdleCharacter;
-//    private CA_MoveCharacter CA_MoveCharacter;
-//    private CA_BasicMeeleAttack CA_BasicMeeleAttack;
-//    private List<MonoBehaviour> allControlActions;
-
-//    private InputSystem_Actions input;
-
-//    private List<GameObject> playerParty;
-//    private List<GameObject> enemyParty;
-
-
-
-//    public void EnterState(UserControlOrchestrator UCO)
-//    {
-//        orchestrator = UCO;
-//        enemyAI = UCO.enemyAI;  // Get AI from orchestrator
-//        gridManager = UCO.gridManager;
-
-//        //Debug.Log"=== ENEMY TURN START ===");
-
-//        // Execute AI turn
-//        enemyAI.ExecuteTurn();
-//        //enemyAI.SetBattleStateEnemyAndTarget();
-//        //allControlActions = new List<MonoBehaviour>();
-//        //userControlOrchestrator = UCO;
-//        //ManagerRegistry managerRegistry = GameObject.FindAnyObjectByType<ManagerRegistry>();
-
-//        //if (managerRegistry != null)
-//        //{
-//        //    GameObject managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<MovementPointsManager>() != null);
-//        //    if (managerObj != null)
-//        //    {
-//        //        movementPointsManager = managerObj.GetComponent<MovementPointsManager>();
-//        //    }
-//        //    managerObj = null;
-
-
-//        //    managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<GridManager>() != null);
-//        //    if (managerObj != null)
-//        //    {
-//        //        gridManager = managerObj.GetComponent<GridManager>();
-//        //    }
-//        //    managerObj = null;
-
-//        //    managerObj = managerRegistry.managerList.Find(obj => obj.GetComponent<CharacterRegisterManager>() != null);
-//        //    if (managerObj != null)
-//        //    {
-//        //        characterRegisterManager = managerObj.GetComponent<CharacterRegisterManager>();
-//        //    }
-//        //    managerObj = null;
-
-//        //    playerParty = characterRegisterManager.playerParty;
-//        //    enemyParty = characterRegisterManager.enemyParty;
-//        //    characterPhase = ECharacterPhase.IDLE;
-//        //    input = userControlOrchestrator.input;
-//        //}
-
-//        //InitializeControlActions();
-
-//        //enemyAI.StartTurn(this);
-//    }
-
-//    // What does the enemy need to make a decision
-//    // PlayerPositions
-
-//    public void ExitState()
-//    {
-
-//    }
-//    public void Update()
-//    {
-
-//    }
-
-//    public void FixedUpdate()
-//    {
-//        if (characterPhase == ECharacterPhase.IDLE && CA_IdleCharacter != null)
-//        {
-//            CA_IdleCharacter.Action();
-//        }
-//        else if (characterPhase == ECharacterPhase.MOVE && CA_MoveCharacter != null)
-//        {
-//            CA_MoveCharacter.Action();
-//        }
-//        else if (characterPhase == ECharacterPhase.ATTACK && CA_BasicMeeleAttack != null)
-//        {
-//            CA_BasicMeeleAttack.Action();
-//        }
-//    }
-
-//    public void InitializeControlActions()
-//    {
-//        CreateCA(E_CA_Type.IDLE_CHARACTER);
-//        CreateCA(E_CA_Type.MOVE_CHARACTER);
-//        CreateCA(E_CA_Type.BASIC_MEELE_ATTACK);
-//    }
-
-//    // Factory pattern WOULD BE better, but need to focus on prototype
-//    // CA_MoveCharacter is managed with deletions and readding.
-//    private void CreateCA(E_CA_Type type)
-//    {
-//        GameObject GO = userControlOrchestrator.gameObject;
-//        GameObject selectedCharacter = userControlOrchestrator.selectedCharacter;
-
-//        if (type == E_CA_Type.MOVE_CHARACTER)
-//        {
-//            CA_MoveCharacter = GO.AddComponent<CA_MoveCharacter>();
-//            CA_MoveCharacter.userControlOrchestrator = userControlOrchestrator;
-//            CA_MoveCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
-//            CA_MoveCharacter.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
-//            allControlActions.Add(CA_MoveCharacter);
-//        }
-//        else if (type == E_CA_Type.IDLE_CHARACTER)
-//        {
-//            CA_IdleCharacter = GO.AddComponent<CA_IdleCharacter>();
-//            CA_IdleCharacter.userControlOrchestrator = userControlOrchestrator;
-//            CA_IdleCharacter.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
-//            CA_IdleCharacter.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
-//            allControlActions.Add(CA_IdleCharacter);
-//        }
-//        else if (type == E_CA_Type.BASIC_MEELE_ATTACK)
-//        {
-//            CA_BasicMeeleAttack = GO.AddComponent<CA_BasicMeeleAttack>();
-//            CA_BasicMeeleAttack.userControlOrchestrator = userControlOrchestrator;
-//            CA_BasicMeeleAttack.playerControls = selectedCharacter.GetComponent<PlayerClickControls>();
-//            CA_BasicMeeleAttack.playerAnim = selectedCharacter.GetComponent<PlayerAnim>();
-//            CA_BasicMeeleAttack.input = input;
-//            allControlActions.Add(CA_BasicMeeleAttack);
-//        }
-//    }
-
-//    public void DeleteCA(E_CA_Type type)
-//    {
-
-//    }
-
-//    public InfoObject GetStateInfo()
-//    {
-//        return new InfoObject{ characterPhase = this.characterPhase };
-//    }
-
-//    public ECharacterPhase GetCharacterPhase()
-//    {
-//        return this.characterPhase;
-//    }
-
-//    public void SetCharacterPhase(ECharacterPhase phase)
-//    {
-//        characterPhase = phase;
-//    }
-//}

@@ -68,13 +68,32 @@ public class CA_MoveCharacter : MonoBehaviour
         // I need to update this to use the event manager
         // Orchestration: Update phase
 
-
         // *** This should be handled in player battle state with OnMovingComplete event
-        if (userControlOrchestrator.CurrentState == userControlOrchestrator.battle_PlayerTurn_State || userControlOrchestrator.CurrentState == userControlOrchestrator.battle_Player_Reaction_State)
+        if (userControlOrchestrator.CurrentState == userControlOrchestrator.battle_PlayerTurn_State)
         {
             userControlOrchestrator.CurrentState.SetCharacterPhase(ECharacterPhase.IDLE);
             userControlOrchestrator.selectedCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");
             EventManager.OnMovingComplete();
+        }
+        else if (userControlOrchestrator.CurrentState == userControlOrchestrator.battle_Player_Reaction_State)
+        {
+            // Cast to the concrete type to access enemyAI
+            IUSO_Battle_Player_Reaction_State reactionState = userControlOrchestrator.CurrentState as IUSO_Battle_Player_Reaction_State;
+
+            if (reactionState != null && reactionState.enemyAI != null)
+            {
+                userControlOrchestrator.CurrentState.SetCharacterPhase(ECharacterPhase.IDLE);
+
+                // Get the reacting character (player being attacked)
+                GameObject reactingCharacter = reactionState.enemyAI.currentTarget;
+
+                if (reactingCharacter != null)
+                {
+                    reactingCharacter.GetComponent<PlayerAnim>().ChangeAnimation("Idle");
+                }
+
+                EventManager.OnMovingComplete();
+            }
         }
         else if (userControlOrchestrator.CurrentState == userControlOrchestrator.battle_EnemyTurn_State)
         {
